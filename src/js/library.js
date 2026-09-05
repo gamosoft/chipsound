@@ -148,6 +148,15 @@ const localTab = {
         holder.textContent = 'Loading…';
         body.appendChild(holder);
 
+        const resetLink = () => {
+            if (base === './tracks/') return null;
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'retro-button library-clear';
+            b.textContent = 'Back to ./tracks/';
+            b.addEventListener('click', () => { prefs.libraryPath = './tracks/'; showTab('local'); });
+            return b;
+        };
         let entries;
         try {
             entries = await listDirectory(base);
@@ -157,6 +166,7 @@ const localTab = {
             p.className = 'library-error';
             p.textContent = `Could not list ${base}: ${err.message}`;
             holder.appendChild(p);
+            const r = resetLink(); if (r) holder.appendChild(r);
             return;
         }
         const items = [];
@@ -174,6 +184,7 @@ const localTab = {
         }
         holder.innerHTML = '';
         holder.appendChild(api.list(items, { empty: 'No modules in this folder.' }));
+        if (!entries.files.length) { const r = resetLink(); if (r) holder.appendChild(r); }
     },
 };
 
