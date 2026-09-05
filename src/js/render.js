@@ -10,14 +10,25 @@ import { toast } from './toast.js';
 const MAX_SECONDS = 30 * 60;
 
 let worker = null;      // render-worker (libopenmpt → PCM)
-let encoder = null;     // encode-worker (PCM → WAV)
+let encoder = null;     // encode-worker (PCM → WAV/FLAC/Opus)
 let ui = null;   // { root, rate, format, loops, button, cancel, bar, status }
 
-// value → label; the encode worker switches on the value.
+// value → label; the encode worker switches on the value. Opus needs the
+// browser's WebCodecs AudioEncoder (Chrome 94+, Firefox 130+) and is
+// encoded at its native 48 kHz.
+const HAS_AUDIO_ENCODER = typeof AudioEncoder !== 'undefined';
 export const FORMATS = [
     ['wav16',    'WAV 16-bit'],
     ['wav32f',   'WAV 32-bit float'],
+    ['flac16',   'FLAC 16-bit'],
+    ['flac24',   'FLAC 24-bit'],
+    ...(HAS_AUDIO_ENCODER ? [
+        ['opus-160', 'Opus 160 kbps'],
+        ['opus-96',  'Opus 96 kbps'],
+        ['opus-64',  'Opus 64 kbps'],
+    ] : []),
 ];
+const OPUS_RATE = 48000;
 
 export function isRendering() {
     return worker !== null || encoder !== null;
@@ -47,7 +58,22 @@ export function refreshRenderAvailability() {
     if (!isRendering()) ui.button.disabled = !playerState.player?.buffer;
 }
 
+function isOpus(format) { return String(format).startsWith('opus'); }
+
+// Opus is always 48 kHz: pin the rate picker while it's selected.
+function syncRateOptions() {
+    const opus = isOpus(ui.format.value);
+    for (const o of ui.rate.options) {
+        const off = opus && Number(o.value) !== OPUS_RATE;
+        o.disabled = off;
+        o.hidden = off;
+    }
+    if (opus) ui.rate.value = String(OPUS_RATE);
+    ui.rate.disabled = opus;
+}
+
 function readSettings() {
+    syncRateOptions();
     const s = {
         sampleRate: Number(ui.rate.value) || 48000,
         format: FORMATS.some(([v]) => v === ui.format.value) ? ui.format.value : 'wav16',
@@ -242,6 +268,8 @@ export function mountRenderControls(parent) {
     parent.appendChild(root);
 
     ui = { root, rate, format, loops, button, cancel, bar, status };
+    format.addEventListener('change', syncRateOptions);
+    syncRateOptions();
     refreshRenderAvailability();
     return root;
 }

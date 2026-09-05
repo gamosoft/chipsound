@@ -1,7 +1,7 @@
 // Offline WAV renderer. Runs a second libopenmpt instance in a dedicated
 // worker so exporting never touches the audio thread — playback keeps going.
 //
-// Output is planar float PCM; encode-worker.js turns it into WAV.
+// Output is planar float PCM; encode-worker.js turns it into WAV/FLAC/Opus.
 //
 // in:  { cmd: 'render', buffer, config, mutes, subsong, sampleRate, loops, maxSeconds }
 // out: { cmd: 'progress', seconds, total }  ~4×/s of rendered audio
