@@ -39,4 +39,13 @@ export const prefs = {
     // Samples pane width in px; null = fit to content.
     get samplesWidth() { return read('samplesWidth', null); },
     set samplesWidth(value) { write('samplesWidth', value); },
+    // Library modal: recent URL history, last tab, local folder to browse.
+    get recent() { return read('recent', []); },
+    set recent(value) { write('recent', value); },
+
+    get libraryTab() { return read('libraryTab', 'curated'); },
+    set libraryTab(value) { write('libraryTab', value); },
+
+    get libraryPath() { return read('libraryPath', './tracks/'); },
+    set libraryPath(value) { write('libraryPath', value); },
 };
