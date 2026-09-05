@@ -869,10 +869,11 @@ kbd {
 /* ========== Library modal ========== */
 
 #libraryOverlay {
-    --lib-accent: #facc15;
+    --lib-accent: var(--popup-accent);
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.78);
+    background: var(--popup-backdrop);
+    backdrop-filter: blur(2px);
     display: none;
     align-items: center;
     justify-content: center;
@@ -881,17 +882,17 @@ kbd {
 #libraryOverlay.visible { display: flex; }
 
 .library-card {
-    background: #1f2937;
-    border: 2px solid #4a4a4a;
+    background: var(--popup-bg);
+    border: 2px solid var(--popup-border);
     border-radius: 8px;
-    box-shadow: 6px 6px 0 #000;
+    box-shadow: 6px 6px 0 var(--popup-shadow);
     width: min(680px, 92vw);
     max-height: 86vh;
     display: flex;
     flex-direction: column;
     padding: 18px 22px;
-    color: #ffffff;
-    font-family: monospace;
+    color: var(--popup-fg);
+    font-family: inherit;
 }
 .library-card h2 {
     margin: 0 0 10px;
@@ -904,38 +905,38 @@ kbd {
 }
 .library-close {
     background: transparent;
-    border: 1px solid #4a4a4a;
-    color: #ffffff;
+    border: 1px solid var(--popup-border);
+    color: var(--popup-fg);
     border-radius: 3px;
     width: 28px;
     height: 28px;
     font-size: 14px;
     cursor: pointer;
 }
-.library-close:hover { background: #4a4a4a; }
+.library-close:hover { background: var(--popup-surface); }
 
 .library-tabs {
     display: flex;
     gap: 4px;
-    border-bottom: 1px solid #4a4a4a;
+    border-bottom: 1px solid var(--popup-border);
     margin-bottom: 10px;
 }
 .library-tab {
     background: transparent;
     border: 1px solid transparent;
     border-bottom: none;
-    color: #9ca3af;
-    font-family: monospace;
+    color: var(--popup-muted);
+    font-family: inherit;
     font-size: 12px;
     padding: 6px 12px;
     border-radius: 4px 4px 0 0;
     cursor: pointer;
 }
-.library-tab:hover { color: #ffffff; }
+.library-tab:hover { color: var(--popup-fg); }
 .library-tab.active {
     color: var(--lib-accent);
-    border-color: #4a4a4a;
-    background: #111827;
+    border-color: var(--popup-border);
+    background: var(--popup-surface);
     margin-bottom: -1px;
 }
 .library-tab:focus-visible { outline: 2px solid var(--lib-accent); outline-offset: -2px; }
@@ -945,8 +946,8 @@ kbd {
     min-height: 200px;
     font-size: 13px;
 }
-.library-blurb { margin: 0 0 10px; color: #9ca3af; font-size: 11px; line-height: 1.5; }
-.library-blurb a { color: #e5e7eb; }
+.library-blurb { margin: 0 0 10px; color: var(--popup-muted); font-size: 11px; line-height: 1.5; }
+.library-blurb a { color: var(--popup-fg); }
 .library-error { color: #ef4444; }
 
 .library-list {
@@ -965,23 +966,23 @@ kbd {
     border: 1px solid transparent;
     border-radius: 4px;
     padding: 7px 8px;
-    color: #e5e7eb;
-    font-family: monospace;
+    color: var(--popup-fg);
+    font-family: inherit;
     font-size: 13px;
     cursor: pointer;
 }
 .library-item:hover, .library-item:focus-visible {
-    background: #111827;
-    border-color: #4a4a4a;
+    background: var(--popup-surface);
+    border-color: var(--popup-border);
     outline: none;
 }
 .library-item i { color: var(--lib-accent); font-size: 11px; }
-.library-dir i { color: #9ca3af; }
+.library-dir i { color: var(--popup-muted); }
 .library-item-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.library-item-sub { color: #9ca3af; font-size: 11px; }
-.library-item-meta { color: #6b7280; font-size: 10px; min-width: 3em; text-align: right; }
+.library-item-sub { color: var(--popup-muted); font-size: 11px; }
+.library-item-meta { color: var(--popup-faint); font-size: 10px; min-width: 3em; text-align: right; }
 .library-item.now-playing .library-item-title { color: var(--lib-accent); }
-.library-empty { color: #6b7280; padding: 16px 8px; }
+.library-empty { color: var(--popup-muted); padding: 16px 8px; }
 
 .library-path, .library-url {
     display: flex;
