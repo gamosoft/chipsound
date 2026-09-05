@@ -309,6 +309,9 @@ export async function showTab(id) {
         const on = b.dataset.tab === tab.id;
         b.classList.toggle('active', on);
         b.setAttribute('aria-selected', String(on));
+        b.tabIndex = on ? 0 : -1;
+        // The modal focuses the first control on open; keep focus on the active tab.
+        if (on && document.activeElement?.classList.contains('library-tab')) b.focus({ preventScroll: true });
     }
     bodyEl.innerHTML = '';
     bodyEl.scrollTop = 0;
