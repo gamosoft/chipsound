@@ -43,6 +43,9 @@ export const prefs = {
     get render() { return read('render', {}); },
     set render(value) { write('render', value); },
 
+    get renderFile() { return read('renderFile', null); },
+    set renderFile(value) { write('renderFile', value); },
+
     get showMixer() { return read('showMixer', false); },
     set showMixer(value) { write('showMixer', value); },
 };

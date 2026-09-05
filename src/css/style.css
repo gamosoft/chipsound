@@ -979,3 +979,34 @@ kbd {
     #toggle-mixer { display: none; }
     .mixer-row { grid-template-columns: 100px 1fr 80px; }
 }
+
+/* Render-to-file row inside the mixer panel */
+.render-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #4a4a4a;
+}
+.render-title { font-weight: bold; color: var(--accent); }
+.render-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.render-field .retro-select { flex: 0 0 auto; }
+.render-loops { width: 3.5em; }
+.render-button, .render-cancel { flex: 0 0 auto; }
+/* !important: themes restyle .retro-button with higher specificity. */
+.render-cancel[hidden] { display: none !important; }
+.render-progress {
+    flex: 1 1 160px;
+    min-width: 120px;
+    height: 10px;
+    accent-color: var(--accent);
+}
+.render-progress[hidden] { display: none; }
+.render-status { opacity: 0.8; }
+.render-row.rendering .render-status { opacity: 1; color: var(--accent); }

@@ -126,6 +126,9 @@ export class ChiptuneJsPlayer {
 	}
 
 	loadBuffer(val) {
+		// postMessage structured-clones the buffer, so keeping a reference here
+		// costs nothing extra. The render worker re-loads from it.
+		this.buffer = val;
 		this.postMsg('load', val);
 	}
 

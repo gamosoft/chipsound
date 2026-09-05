@@ -35,6 +35,7 @@ import { placeholderMeta } from './placeholder.js';
 import { installDiagnostics } from './diagnostics.js';
 import { installMediaSession, setMediaSessionMetadata } from './media-session.js';
 import { initMixer, savedRenderConfig } from './mixer.js';
+import { refreshRenderAvailability } from './render.js';
 
 let rafId = -1;
 
@@ -124,6 +125,7 @@ function bootstrapPlayer() {
             clearVisualizations(meta.song, getCurrentVisualizations());
         });
         onSongLoaded();
+        refreshRenderAvailability();
     });
 
     player.onProgress(pos => {

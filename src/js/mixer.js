@@ -16,6 +16,7 @@ import { $ } from './dom.js';
 import { prefs } from './prefs.js';
 import { playerState } from './state.js';
 import { relayoutTracker } from './tracker.js';
+import { mountRenderControls } from './render.js';
 
 const signed = v => (v > 0 ? '+' : '') + v;
 
@@ -413,6 +414,7 @@ function buildPanel() {
     }
     panelEl.appendChild(grid);
     refreshInert();
+    mountRenderControls(panelEl);
 }
 
 export function resetAll() {
