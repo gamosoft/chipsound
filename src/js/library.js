@@ -14,6 +14,7 @@ import { $, isTypingTarget } from './dom.js';
 import { prefs } from './prefs.js';
 import { playerState } from './state.js';
 import { loadFromUrl } from './controls.js';
+import { createModal } from './modal.js';
 
 export function modArchiveDownloadUrl(id) {
     if (!id || !/^\d+$/.test(String(id))) return null;
@@ -34,12 +35,28 @@ export const CURATED = [
 const MODULE_EXT = /\.(mod|s3m|xm|it|mptm|669|amf|ams|dbm|digi|dmf|dsm|far|gdm|imf|j2b|mdl|med|mo3|mt2|mtm|okt|plm|psm|ptm|sfx|stm|ult|umx|wow|mdz|s3z|xmz|itz)$/i;
 const RECENT_MAX = 25;
 
-let overlayEl = null;
 let bodyEl = null;
 let tabBarEl = null;
-let isOpen = false;
 let activeTab = null;
 const tabs = [];
+
+// The dialog shell (overlay, card, Esc, focus handling) comes from modal.js;
+// this module only supplies the tab bar and tab panels.
+const modal = createModal({
+    id: 'libraryOverlay',
+    title: '<i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Library',
+    className: 'modal-library',
+    width: 'min(680px, 92vw)',
+    build(body) {
+        tabBarEl = document.createElement('div');
+        tabBarEl.className = 'library-tabs';
+        tabBarEl.setAttribute('role', 'tablist');
+        bodyEl = document.createElement('div');
+        bodyEl.className = 'library-body';
+        body.append(tabBarEl, bodyEl);
+        renderTabBar();
+    },
+});
 
 export function registerLibraryTab(tab) {
     tabs.push(tab);
@@ -269,30 +286,6 @@ function relTime(t) {
 
 // ---------- modal ----------
 
-function buildOverlay() {
-    const node = document.createElement('div');
-    node.id = 'libraryOverlay';
-    node.setAttribute('role', 'dialog');
-    node.setAttribute('aria-modal', 'true');
-    node.setAttribute('aria-label', 'Library');
-    node.innerHTML = `
-        <div class="library-card">
-            <h2>
-                <span><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Library</span>
-                <button type="button" class="library-close" aria-label="Close (Esc)">×</button>
-            </h2>
-            <div class="library-tabs" role="tablist"></div>
-            <div class="library-body"></div>
-        </div>`;
-    node.addEventListener('click', e => { if (e.target === node) closeLibrary(); });
-    node.querySelector('.library-close').addEventListener('click', closeLibrary);
-    tabBarEl = node.querySelector('.library-tabs');
-    bodyEl = node.querySelector('.library-body');
-    document.body.appendChild(node);
-    renderTabBar();
-    return node;
-}
-
 function renderTabBar() {
     tabBarEl.innerHTML = '';
     for (const t of tabs) {
@@ -326,30 +319,24 @@ export async function showTab(id) {
 }
 
 export function openLibrary(tabId) {
-    if (!overlayEl) overlayEl = buildOverlay();
-    overlayEl.classList.add('visible');
-    isOpen = true;
+    modal.open();
     showTab(tabId || prefs.libraryTab || 'curated');
 }
 
-export function closeLibrary() {
-    if (!overlayEl) return;
-    overlayEl.classList.remove('visible');
-    isOpen = false;
-}
+export function closeLibrary() { modal.close(); }
 
 export function toggleLibrary() {
-    if (isOpen) closeLibrary(); else openLibrary();
+    if (modal.isOpen()) closeLibrary(); else openLibrary();
 }
 
-export function isLibraryOpen() { return isOpen; }
+export function isLibraryOpen() { return modal.isOpen(); }
 
 export function initLibrary() {
     for (const t of [curatedTab, recentTab, localTab, urlTab]) if (!tabs.includes(t)) tabs.push(t);
     $('#browse')?.addEventListener('click', () => toggleLibrary());
+    // Esc is handled by the modal primitive; ←/→ switch tabs.
     document.addEventListener('keydown', e => {
-        if (e.code === 'Escape' && isOpen) { e.preventDefault(); closeLibrary(); return; }
-        if (isOpen && !isTypingTarget(e.target) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        if (modal.isOpen() && !isTypingTarget(e.target) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
             const i = tabs.findIndex(t => t.id === activeTab);
             const n = (i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
             e.preventDefault();

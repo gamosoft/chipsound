@@ -866,60 +866,16 @@ kbd {
 }
 
 
-/* ========== Library modal ========== */
+/* ========== Library modal (content only; shell from .modal-*) ========== */
 
-#libraryOverlay {
-    --lib-accent: var(--popup-accent);
-    position: fixed;
-    inset: 0;
-    background: var(--popup-backdrop);
-    backdrop-filter: blur(2px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 2500;
-}
-#libraryOverlay.visible { display: flex; }
-
-.library-card {
-    background: var(--popup-bg);
-    border: 2px solid var(--popup-border);
-    border-radius: 8px;
-    box-shadow: 6px 6px 0 var(--popup-shadow);
-    width: min(680px, 92vw);
-    max-height: 86vh;
-    display: flex;
-    flex-direction: column;
-    padding: 18px 22px;
-    color: var(--popup-fg);
-    font-family: inherit;
-}
-.library-card h2 {
-    margin: 0 0 10px;
-    font-size: 16px;
-    color: var(--lib-accent);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-.library-close {
-    background: transparent;
-    border: 1px solid var(--popup-border);
-    color: var(--popup-fg);
-    border-radius: 3px;
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
-    cursor: pointer;
-}
-.library-close:hover { background: var(--popup-surface); }
+.modal-library .modal-body { display: flex; flex-direction: column; }
 
 .library-tabs {
     display: flex;
     gap: 4px;
     border-bottom: 1px solid var(--popup-border);
     margin-bottom: 10px;
+    flex: 0 0 auto;
 }
 .library-tab {
     background: transparent;
@@ -934,14 +890,15 @@ kbd {
 }
 .library-tab:hover { color: var(--popup-fg); }
 .library-tab.active {
-    color: var(--lib-accent);
+    color: var(--popup-accent);
     border-color: var(--popup-border);
     background: var(--popup-surface);
     margin-bottom: -1px;
 }
-.library-tab:focus-visible { outline: 2px solid var(--lib-accent); outline-offset: -2px; }
+.library-tab:focus-visible { outline: 2px solid var(--popup-accent); outline-offset: -2px; }
 
 .library-body {
+    flex: 1 1 auto;
     overflow: auto;
     min-height: 200px;
     font-size: 13px;
@@ -976,12 +933,12 @@ kbd {
     border-color: var(--popup-border);
     outline: none;
 }
-.library-item i { color: var(--lib-accent); font-size: 11px; }
+.library-item i { color: var(--popup-accent); font-size: 11px; }
 .library-dir i { color: var(--popup-muted); }
 .library-item-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .library-item-sub { color: var(--popup-muted); font-size: 11px; }
 .library-item-meta { color: var(--popup-faint); font-size: 10px; min-width: 3em; text-align: right; }
-.library-item.now-playing .library-item-title { color: var(--lib-accent); }
+.library-item.now-playing .library-item-title { color: var(--popup-accent); }
 .library-empty { color: var(--popup-muted); padding: 16px 8px; }
 
 .library-path, .library-url {
