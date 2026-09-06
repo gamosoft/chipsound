@@ -72,6 +72,8 @@ Other things worth mentioning:
 - Press `T` to cycle themes, `V` to cycle visualizations
 - Click a channel header to mute it; Ctrl-click to solo
 - Subsong picker for modules that ship multiple subsongs
+- Press `M` for the Mixer: live stereo separation, Amiga resampler, interpolation, volume ramping, tempo, pitch (semitones), gain and loop settings, all applied by libopenmpt on the fly and remembered between sessions. Drag for coarse and hold `Shift` at any point for fine, use the wheel or arrow keys to nudge, click a value to type it, double-click to reset
+- Render the loaded module to a WAV, FLAC or Opus file with the current mixer settings and channel mutes (Mixer → Render to file)
 - `?` opens the full keyboard shortcut list
 
 ## Quick start
@@ -133,6 +135,7 @@ https://chipsound.com/player.html?modarchive=212083
 | `E` | Toggle effects (visualizations on/off) |
 | `V` / `Shift` + `V` | Cycle visualization forward / backward |
 | `I` | Toggle samples panel |
+| `M` | Toggle mixer (playback parameters + render to file) |
 | `T` / `Shift` + `T` | Cycle theme forward / backward |
 | `?` | Show this help |
 | `Esc` | Close this help |
@@ -147,6 +150,8 @@ The repository source is telemetry-free. There's no analytics module, no Google 
 
 Google Analytics 4 only runs on the public site at [chipsound.com](https://chipsound.com): both the loader script and the single delegated listener that reads `data-track` are injected at deploy time by [`.github/workflows/pages.yml`](.github/workflows/pages.yml), and the injected snippet itself checks `location.hostname` before firing anything. Self-hosted deployments (Docker, Caddy, `python -m http.server`, anything you run yourself) fire zero requests to Google — easy to verify in DevTools → Network.
 
+One exception, opt-in by action: the first **FLAC** export in a session downloads the FLAC encoder (libflac.js, pinned version, ~240 KB) from jsDelivr. Nothing is sent besides the ordinary request; WAV and Opus exports need no download at all.
+
 ## License
 
 [MIT-licensed](LICENSE) — free to use, modify, fork, embed, and redistribute. Copyright © 2026 Gamosoft.
@@ -156,6 +161,7 @@ The MIT license covers first-party code only. Bundled third-party components kee
 - **libopenmpt** — BSD-3-Clause. See [`docs/third-party/libopenmpt-LICENSE.txt`](docs/third-party/libopenmpt-LICENSE.txt).
 - **Chiptune.js** — MIT. See [`docs/third-party/chiptune-js-LICENSE.txt`](docs/third-party/chiptune-js-LICENSE.txt).
 - **Font Awesome Free 6.5.1** — Icons CC BY 4.0, fonts SIL OFL 1.1, code MIT. See [`docs/third-party/font-awesome-LICENSE.txt`](docs/third-party/font-awesome-LICENSE.txt).
+- **libflac.js** — MIT wrapper around BSD-3-Clause libFLAC; fetched from jsDelivr on first FLAC export, not bundled. See [`docs/third-party/libflac-js-LICENSE.txt`](docs/third-party/libflac-js-LICENSE.txt).
 
 Full notice summary in [`NOTICE`](NOTICE).
 
@@ -166,3 +172,4 @@ Chipsound is a UI shell on top of other open-source work:
 - **[libopenmpt](https://lib.openmpt.org/libopenmpt/)** — the OpenMPT team's reference decoder, compiled to WebAssembly.
 - **[Chiptune.js](https://github.com/DrSnuggles/chiptune)** — the WebAudio wrapper around libopenmpt by DrSnuggles (and originally [chiptune2.js](https://github.com/deskjet/chiptune2.js) by deskjet).
 - **[Font Awesome](https://fontawesome.com)** — the icon set used throughout the UI.
+- **[libflac.js](https://github.com/mmig/libflac.js)** — FLAC encoder for the render-to-file feature. Opus export uses the browser's own encoder via WebCodecs.

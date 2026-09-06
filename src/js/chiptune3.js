@@ -1,7 +1,12 @@
 const defaultCfg = {
 	repeatCount: 0,		// -1 = play endless, 0 = play once, do not repeat
-	stereoSeparation: 100,	// percents
+	stereoSeparation: 100,	// percents (0..200, 200 = full Amiga hard pan)
 	interpolationFilter: 0,	// https://lib.openmpt.org/doc/group__openmpt__module__render__param.html
+	volumeRamping: -1,		// -1 = libopenmpt default, 0 = off, 1..10 = strength
+	masterGain: 0,			// millibel
+	amigaResampler: 'a1200',	// 'off' | 'auto' | 'a500' | 'a1200' | 'unfiltered' (Amiga modules only)
+	tempoFactor: 1,
+	pitchFactor: 1,
 	context: false,
 }
 
@@ -121,6 +126,9 @@ export class ChiptuneJsPlayer {
 	}
 
 	loadBuffer(val) {
+		// postMessage structured-clones the buffer, so keeping a reference here
+		// costs nothing extra. The render worker re-loads from it.
+		this.buffer = val;
 		this.postMsg('load', val);
 	}
 
@@ -154,6 +162,12 @@ export class ChiptuneJsPlayer {
 
 	setTempo(val) {
 		this.postMsg('setTempo', val);
+	}
+
+	// Live playback parameter — see chiptune3.worklet.js#applyRenderParam for keys.
+	setRenderParam(key, val) {
+		this.config[key] = val;
+		this.postMsg('render', { key, value: val });
 	}
 
 	// Idempotent: UI state.js is the single source of truth, so passing the
