@@ -72,6 +72,7 @@ Other things worth mentioning:
 - Press `T` to cycle themes, `V` to cycle visualizations
 - Click a channel header to mute it; Ctrl-click to solo
 - Subsong picker for modules that ship multiple subsongs
+- Press `M` for the Mixer: live stereo separation, Amiga resampler, interpolation, volume ramping, tempo, pitch (semitones), gain and loop settings, all applied by libopenmpt on the fly and remembered between sessions. Drag for coarse and hold `Shift` at any point for fine, use the wheel or arrow keys to nudge, click a value to type it, double-click to reset
 - `?` opens the full keyboard shortcut list
 
 ## Quick start
@@ -133,6 +134,7 @@ https://chipsound.com/player.html?modarchive=212083
 | `E` | Toggle effects (visualizations on/off) |
 | `V` / `Shift` + `V` | Cycle visualization forward / backward |
 | `I` | Toggle samples panel |
+| `M` | Toggle mixer (playback parameters) |
 | `T` / `Shift` + `T` | Cycle theme forward / backward |
 | `?` | Show this help |
 | `Esc` | Close this help |

@@ -33,6 +33,7 @@ import { applyTheme, currentTheme, wireThemePicker, prefetchOtherThemes, initThe
 import { placeholderMeta } from './placeholder.js';
 import { installDiagnostics } from './diagnostics.js';
 import { installMediaSession, setMediaSessionMetadata } from './media-session.js';
+import { initMixer, savedRenderConfig } from './mixer.js';
 
 let rafId = -1;
 
@@ -84,7 +85,9 @@ function modArchiveUrl(id) {
 }
 
 function bootstrapPlayer() {
-    const player = new ChiptuneJsPlayer();
+    // Saved mixer settings ride along in the worklet's initial config, so
+    // the first load() already honours them — no round trip needed.
+    const player = new ChiptuneJsPlayer(savedRenderConfig());
     playerState.player = player;
 
     player.onInitialized(() => {
@@ -205,6 +208,7 @@ async function init() {
             }
         },
     });
+    initMixer();
     installKeyboardShortcuts();
     installHelpEscape();
     installResizeHandler();
