@@ -456,7 +456,7 @@ function centerRow(grid, row) {
 }
 
 // Cancels any in-flight prefetch first; only the latest schedule wins.
-function schedulePrefetch(song, fromOrder) {
+function schedulePrefetch(song, fromOrder, deferrals = 0) {
     cancelPrefetch();
     if (!song || song.totalOrders == null) return;
     const nextOrder = (fromOrder ?? 0) + 1;
@@ -474,10 +474,13 @@ function schedulePrefetch(song, fromOrder) {
         if (targetPattern === activeGrid.patternIndex) return;
         if (targetPattern === prefetchGrid.patternIndex) return;
 
-        // Retry rather than overrun the idle budget.
+        // Prefer a quiet slot, but don't wait forever: while the rAF loop runs
+        // the idle budget peaks near one frame (~16 ms), and a cold miss at
+        // the boundary would cost the same build inside a playback frame.
         if (deadline && typeof deadline.timeRemaining === 'function'
-            && deadline.timeRemaining() < PREFETCH_MIN_BUDGET_MS) {
-            schedulePrefetch(song, fromOrder);
+            && deadline.timeRemaining() < PREFETCH_MIN_BUDGET_MS
+            && deferrals < PREFETCH_MAX_DEFERRALS) {
+            schedulePrefetch(song, fromOrder, deferrals + 1);
             return;
         }
         populateGrid(prefetchGrid, song, targetPattern);
@@ -495,7 +498,8 @@ function schedulePrefetch(song, fromOrder) {
     }
 }
 
-const PREFETCH_MIN_BUDGET_MS = 20;
+const PREFETCH_MIN_BUDGET_MS = 8;
+const PREFETCH_MAX_DEFERRALS = 4;
 
 function cancelPrefetch() {
     if (prefetchIdleHandle === -1) return;
