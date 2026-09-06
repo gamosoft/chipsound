@@ -255,7 +255,10 @@ body { overflow: hidden; }
 
 .tracker-container {
     display: grid;
-    grid-template-columns: 1fr minmax(150px, 25%);
+    /* Samples column fits its content (blank names → narrow, more room for
+       32-channel patterns), capped at 40 % of the row. --samples-col is set
+       inline by pane-resize.js when the user drags the handle. */
+    grid-template-columns: minmax(0, 1fr) var(--samples-col, fit-content(40%));
     gap: 16px;
 }
 /* Stamped on <html> by preboot; kept in sync by toggleSamplesVisible. */
@@ -416,7 +419,45 @@ html.samples-hidden .sample-section    { display: none; }
 
 /* ========== Sample list ========== */
 
-.sample-section { min-width: 0; }
+.sample-section {
+    position: relative;
+    min-width: 120px;
+}
+
+/* Drag handle on the pane's inner edge (sits in the grid gap). */
+.pane-resizer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -14px;
+    width: 12px;
+    cursor: col-resize;
+    border-radius: 3px;
+    touch-action: none;
+}
+.sample-section.samples-left .pane-resizer { left: auto; right: -14px; }
+.pane-resizer::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2px;
+    height: 32px;
+    transform: translate(-50%, -50%);
+    border-radius: 1px;
+    background: var(--tracker-row-highlight);
+    opacity: 0.6;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+.pane-resizer:hover::after, .pane-resizer.dragging::after, .pane-resizer:focus-visible::after {
+    background: var(--accent);
+    opacity: 1;
+    height: 48px;
+}
+.pane-resizer:focus-visible { outline: none; }
+body.pane-resizing { cursor: col-resize; user-select: none; }
+body.pane-resizing iframe, body.pane-resizing canvas { pointer-events: none; }
+html.samples-hidden .pane-resizer { display: none; }
 
 .sample-list {
     background: var(--tracker-bg);
@@ -698,6 +739,7 @@ kbd {
     .row-label, .header-label { min-width: 30px; font-size: 10px; }
 
     .sample-list { margin-top: 16px; height: auto !important; max-height: 200px; }
+    .pane-resizer { display: none; }
 
     .retro-button { padding: 4px 8px; font-size: 10px; flex: 1 1 calc(50% - 4px); }
 

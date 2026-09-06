@@ -72,6 +72,7 @@ Other things worth mentioning:
 - Press `T` to cycle themes, `V` to cycle visualizations
 - Click a channel header to mute it; Ctrl-click to solo
 - Subsong picker for modules that ship multiple subsongs
+- The samples pane fits its content; drag its inner edge to resize it (double-click to go back to automatic)
 - `?` opens the full keyboard shortcut list
 
 ## Quick start

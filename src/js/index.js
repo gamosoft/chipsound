@@ -29,6 +29,7 @@ import { getChannelVolumes } from './viz-core.js';
 import { installKeyboardShortcuts } from './keyboard.js';
 import { installHelpEscape } from './help.js';
 import { installResizeHandler } from './layout.js';
+import { installSamplesResizer } from './pane-resize.js';
 import { applyTheme, currentTheme, wireThemePicker, prefetchOtherThemes, initThemes } from './themes.js';
 import { placeholderMeta } from './placeholder.js';
 import { installDiagnostics } from './diagnostics.js';
@@ -208,6 +209,7 @@ async function init() {
     installKeyboardShortcuts();
     installHelpEscape();
     installResizeHandler();
+    installSamplesResizer();
 
     applyTheme(currentTheme());
     wireThemePicker();

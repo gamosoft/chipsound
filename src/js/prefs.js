@@ -35,4 +35,8 @@ export const prefs = {
 
     get theme() { return read('theme', 'clusters'); },
     set theme(value) { write('theme', value); },
+
+    // Samples pane width in px; null = fit to content.
+    get samplesWidth() { return read('samplesWidth', null); },
+    set samplesWidth(value) { write('samplesWidth', value); },
 };

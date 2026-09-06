@@ -200,7 +200,7 @@
    class so the pane doesn't flash in on load. `grid-auto-flow: dense` is
    required because .sample-section is the 2nd DOM child pinned to col 1. */
 :root.theme-foundry:not(.samples-hidden) .tracker-container {
-    grid-template-columns: minmax(160px, 22%) 1fr;
+    grid-template-columns: var(--samples-col, fit-content(40%)) minmax(0, 1fr);
     grid-auto-flow: dense;
 }
 :root.theme-foundry:not(.samples-hidden) .tracker-container .sample-section { grid-column: 1; grid-row: 1; }
