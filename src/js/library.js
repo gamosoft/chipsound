@@ -2,7 +2,7 @@
 // player. Tabs are plain objects so more can be added (playlists, an API
 // browser, …) with registerLibraryTab():
 //
-//   { id, label, icon, render(body, api) }
+//   { id, label, icon, render(body, api) }   registerLibraryTab(tab, { before: 'url' })
 //   api.load(url, { name })  fetch + play a module and close the modal
 //   api.list(items)          helper: render [{ title, subtitle, url, meta }]
 //
@@ -58,8 +58,11 @@ const modal = createModal({
     },
 });
 
-export function registerLibraryTab(tab) {
-    tabs.push(tab);
+// Add a tab. `before` is the id of an existing tab to insert in front of
+// (default: append after the built-ins).
+export function registerLibraryTab(tab, { before = null } = {}) {
+    const at = before ? tabs.findIndex(t => t.id === before) : -1;
+    if (at >= 0) tabs.splice(at, 0, tab); else tabs.push(tab);
     if (tabBarEl) renderTabBar();
 }
 
