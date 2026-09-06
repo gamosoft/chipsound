@@ -33,6 +33,7 @@ import { applyTheme, currentTheme, wireThemePicker, prefetchOtherThemes, initThe
 import { placeholderMeta } from './placeholder.js';
 import { installDiagnostics } from './diagnostics.js';
 import { installMediaSession, setMediaSessionMetadata } from './media-session.js';
+import { initLibrary, modArchiveDownloadUrl } from './library.js';
 
 let rafId = -1;
 
@@ -74,15 +75,6 @@ function stopTicker() {
     if (song) clearVisualizations(song, getCurrentVisualizations());
 }
 
-// Expand the ?modarchive=<n> shortcut into a Modarchive download URL. Strict
-// digits-only validation guards against junk smuggled into shared links;
-// real fetch failures (e.g. unknown ID) are surfaced by the existing URL
-// load error path.
-function modArchiveUrl(id) {
-    if (!id || !/^\d+$/.test(id)) return null;
-    return `https://api.modarchive.org/downloads.php?moduleid=${id}`;
-}
-
 function bootstrapPlayer() {
     const player = new ChiptuneJsPlayer();
     playerState.player = player;
@@ -101,7 +93,7 @@ function bootstrapPlayer() {
         // suspended, so play() would show the Pause icon without producing
         // sound. The first Space / click both unlocks audio and starts playback.
         const params = new URLSearchParams(location.search);
-        const loadUrl = params.get('load') || modArchiveUrl(params.get('modarchive'));
+        const loadUrl = params.get('load') || modArchiveDownloadUrl(params.get('modarchive'));
         if (loadUrl) loadFromUrl(loadUrl, { autoPlay: false });
     });
 
@@ -205,6 +197,7 @@ async function init() {
             }
         },
     });
+    initLibrary();
     installKeyboardShortcuts();
     installHelpEscape();
     installResizeHandler();

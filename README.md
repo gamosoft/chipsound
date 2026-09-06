@@ -72,6 +72,7 @@ Other things worth mentioning:
 - Press `T` to cycle themes, `V` to cycle visualizations
 - Click a channel header to mute it; Ctrl-click to solo
 - Subsong picker for modules that ship multiple subsongs
+- Press `B` for the Library: the chipsound.com sample tracks, your recent URLs, a browsable local folder (serve your modules as `./tracks/`) and a URL / Mod Archive id box
 - `?` opens the full keyboard shortcut list
 
 ## Quick start
@@ -129,6 +130,7 @@ https://chipsound.com/player.html?modarchive=212083
 | `Space` / `P` | Play / Pause |
 | `S` | Stop |
 | `L` | Open file… |
+| `B` | Library (curated / recent / local / URL) |
 | `←` / `→` | Previous / next order |
 | `E` | Toggle effects (visualizations on/off) |
 | `V` / `Shift` + `V` | Cycle visualization forward / backward |

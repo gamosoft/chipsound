@@ -35,4 +35,14 @@ export const prefs = {
 
     get theme() { return read('theme', 'clusters'); },
     set theme(value) { write('theme', value); },
+
+    // Library modal: recent URL history, last tab, local folder to browse.
+    get recent() { return read('recent', []); },
+    set recent(value) { write('recent', value); },
+
+    get libraryTab() { return read('libraryTab', 'curated'); },
+    set libraryTab(value) { write('libraryTab', value); },
+
+    get libraryPath() { return read('libraryPath', './tracks/'); },
+    set libraryPath(value) { write('libraryPath', value); },
 };
