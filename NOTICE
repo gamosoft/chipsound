@@ -43,3 +43,21 @@ under its own license; reproduce the matching license text from
    Copyright (c) Fonticons, Inc.
 
    Full text: /docs/third-party/font-awesome-LICENSE.txt
+
+
+4. libflac.js 5.6.0
+--------------------
+
+   Upstream:    https://github.com/mmig/libflac.js
+   Not bundled: fetched at runtime from
+                https://cdn.jsdelivr.net/npm/libflacjs@5.6.0/dist/ the first
+                time a FLAC export runs (src/js/encode-worker.js). Listed
+                because the app depends on it; the licence text is kept in
+                /docs/third-party so redistributions stay compliant.
+   License:     MIT (wrapper) · BSD-3-Clause (libFLAC, Xiph.Org Foundation)
+
+   Copyright (c) 2014-2020 DFKI GmbH
+   Copyright (C) 2000-2009 Josh Coalson
+   Copyright (C) 2011-2014 Xiph.Org Foundation
+
+   Full text: /docs/third-party/libflac-js-LICENSE.txt

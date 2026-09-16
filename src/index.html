@@ -154,6 +154,9 @@
             <button id="toggle-samples" class="retro-button" type="button" data-track="samples_clicked" aria-label="Toggle samples (I)" title="Toggle samples (I)" disabled>
                 <i class="fa-solid fa-record-vinyl" aria-hidden="true"></i> <span class="btn-label">Samples</span>
             </button>
+            <button id="toggle-mixer" class="retro-button" type="button" data-track="mixer_clicked" aria-label="Toggle mixer (M)" title="Playback parameters (M)" aria-pressed="false">
+                <i class="fa-solid fa-sliders" aria-hidden="true"></i> <span class="btn-label">Mixer</span>
+            </button>
             <label class="volume-control" aria-label="Volume" title="Volume">
                 <i class="fa-solid fa-volume-high" aria-hidden="true"></i>
                 <input id="volume" type="range" min="0" max="100" step="1" value="100" aria-label="Volume" title="Volume">
@@ -162,6 +165,8 @@
                 <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
             </button>
         </section>
+
+        <section id="mixerPanel" class="mixer-panel" aria-label="Playback parameters" hidden></section>
 
         <section class="tracker-container">
             <div class="tracker-main">

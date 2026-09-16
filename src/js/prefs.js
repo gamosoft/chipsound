@@ -39,4 +39,13 @@ export const prefs = {
     // Samples pane width in px; null = fit to content.
     get samplesWidth() { return read('samplesWidth', null); },
     set samplesWidth(value) { write('samplesWidth', value); },
+    // Playback parameters (mixer panel) — object keyed like the worklet config.
+    get render() { return read('render', {}); },
+    set render(value) { write('render', value); },
+
+    get renderFile() { return read('renderFile', null); },
+    set renderFile(value) { write('renderFile', value); },
+
+    get showMixer() { return read('showMixer', false); },
+    set showMixer(value) { write('showMixer', value); },
 };

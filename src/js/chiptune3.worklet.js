@@ -1,8 +1,5 @@
 import libopenmptPromise from './libopenmpt.worklet.js'
-
-// consts
-const OPENMPT_MODULE_RENDER_STEREOSEPARATION_PERCENT = 2;
-const OPENMPT_MODULE_RENDER_INTERPOLATIONFILTER_LENGTH = 3;
+import { applyRenderParam as applyParam, applyRenderConfig as applyConfig } from './openmpt-params.js'
 
 // openmpt's "interactive" extension is a struct of 16 function pointers in
 // WASM32 (4 bytes each). Layout (index → byte offset):
@@ -141,6 +138,19 @@ class MPT extends AudioWorkletProcessor {
 		return true // def. needed for Chrome
 	}
 
+	// Set one playback parameter, remember it in config, and apply it to the
+	// loaded module (if any). Key list: openmpt-params.js#applyRenderParam.
+	applyRenderParam(key, value) {
+		this.config[key] = value;
+		if (!this.modulePtr) return;
+		applyParam(libopenmpt, this.modulePtr, key, value);
+	}
+
+	applyRenderConfig() {
+		if (!this.modulePtr) return;
+		applyConfig(libopenmpt, this.modulePtr, this.config);
+	}
+
 	handleMessage_(msg) {
 		const v = msg.data.val;
 		switch (msg.data.cmd) {
@@ -173,17 +183,20 @@ class MPT extends AudioWorkletProcessor {
 				this.meta();
 				break
 			case 'repeatCount':
-				this.config.repeatCount = v
-				if (!this.modulePtr) return
-				libopenmpt._openmpt_module_set_repeat_count(this.modulePtr, this.config.repeatCount);
+				this.applyRenderParam('repeatCount', v);
 				break
 			case 'setPitch':
-				if (!libopenmpt.stackSave || !this.modulePtr) return
-				libopenmpt._openmpt_module_ctl_set(this.modulePtr, asciiToStack('play.pitch_factor'), asciiToStack(v.toString()));
+				this.applyRenderParam('pitchFactor', v);
 				break
 			case 'setTempo':
-				if (!libopenmpt.stackSave || !this.modulePtr) return
-				libopenmpt._openmpt_module_ctl_set(this.modulePtr, asciiToStack('play.tempo_factor'), asciiToStack(v.toString()));
+				this.applyRenderParam('tempoFactor', v);
+				break
+			case 'render':
+				// v = { key, value } — see applyRenderParam for the key list.
+				// Stored in config so every future load() inherits it; applied
+				// immediately when a module is loaded. All of these are live in
+				// libopenmpt: they take effect on the next rendered quantum.
+				this.applyRenderParam(v.key, v.value);
 				break
 			case 'selectSubsong':
 				if (!this.modulePtr) return
@@ -248,20 +261,11 @@ class MPT extends AudioWorkletProcessor {
 
 		this.setupInteractive();
 
-		if (libopenmpt.stackSave) {
-			const stack = libopenmpt.stackSave();
-			libopenmpt._openmpt_module_ctl_set(this.modulePtr, asciiToStack('render.resampler.emulate_amiga'), asciiToStack('1'));
-			libopenmpt._openmpt_module_ctl_set(this.modulePtr, asciiToStack('render.resampler.emulate_amiga_type'), asciiToStack('a1200'));
-			libopenmpt.stackRestore(stack);
-		}
-
 		this.leftPtr = libopenmpt._malloc(4 * maxFramesPerChunk);	// 4x = float
 		this.rightPtr = libopenmpt._malloc(4 * maxFramesPerChunk);
 
-		// set config options on module
-		libopenmpt._openmpt_module_set_repeat_count(this.modulePtr, this.config.repeatCount);
-		libopenmpt._openmpt_module_set_render_param(this.modulePtr, OPENMPT_MODULE_RENDER_STEREOSEPARATION_PERCENT, this.config.stereoSeparation);
-		libopenmpt._openmpt_module_set_render_param(this.modulePtr, OPENMPT_MODULE_RENDER_INTERPOLATIONFILTER_LENGTH, this.config.interpolationFilter);
+		// set config options on module (render params + ctls)
+		this.applyRenderConfig();
 
 		this.paused = true;
 
