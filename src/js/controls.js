@@ -4,6 +4,7 @@ import { $, on, setText, setEnabled } from './dom.js';
 import { playerState } from './state.js';
 import { prefs } from './prefs.js';
 import { toast, hideToast } from './toast.js';
+import { recordRecent } from './library.js';
 import {
     clearSampleHighlights,
     resetTracker,
@@ -263,7 +264,7 @@ async function fetchWithRetry(url, signal) {
     }
 }
 
-export async function loadFromUrl(url, { autoPlay = true } = {}) {
+export async function loadFromUrl(url, { autoPlay = true, name = null } = {}) {
     if (!url) return;
 
     // Supersede any previous in-flight URL load.
@@ -340,9 +341,11 @@ export async function loadFromUrl(url, { autoPlay = true } = {}) {
         // and the path is just "/downloads.php").
         const headerName = filenameFromContentDisposition(response.headers.get('Content-Disposition'));
         const urlName = filenameFromUrl(url);
-        const filename = (headerName && isAcceptedFile(headerName)) ? headerName
+        const filename = name                                          ? name
+                       : (headerName && isAcceptedFile(headerName)) ? headerName
                        : (urlName && isAcceptedFile(urlName))       ? urlName
                        : urlDisplayLabel(url);
+        recordRecent({ url, name: filename });
 
         if (!autoPlay) setPlaying(false);
         setControlsAvailable(false);

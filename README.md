@@ -73,6 +73,7 @@ Other things worth mentioning:
 - Click a channel header to mute it; Ctrl-click to solo
 - Subsong picker for modules that ship multiple subsongs
 - The samples pane starts **automatic**: as wide as the longest sample name (floor 120px, cap 40% of the row). Drag the handle on its inner edge to set a width for this browser; double-click the handle (or Home with it focused) to go back to automatic
+- Press `B` for the Library: the chipsound.com sample tracks, your recent URLs, a browsable local folder (serve your modules as `./tracks/`) and a URL / Mod Archive id box
 - `?` opens the full keyboard shortcut list
 
 ## Quick start
@@ -130,6 +131,7 @@ https://chipsound.com/player.html?modarchive=212083
 | `Space` / `P` | Play / Pause |
 | `S` | Stop |
 | `L` | Open file… |
+| `B` | Library (curated / recent / local / URL) |
 | `←` / `→` | Previous / next order |
 | Handle + `←` / `→` | Nudge samples pane width (Shift: 40px) |
 | Handle + `Home` | Reset samples pane to automatic |
