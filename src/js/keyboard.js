@@ -4,6 +4,8 @@ import { $, isTypingTarget } from './dom.js';
 import { cycleTheme } from './themes.js';
 import { cycleVisualization } from './controls.js';
 import { toggleMixer } from './mixer.js';
+import { toggleLibrary } from './library.js';
+import { isAnyModalOpen } from './modal.js';
 
 // ENTER belongs to focused button-likes; SPACE stays global Play/Pause.
 function isActivatableTarget(target) {
@@ -19,6 +21,7 @@ export const SHORTCUTS = [
     { codes: ['Space', 'KeyP'], keys: ['Space', 'P'],    label: 'Play / Pause',            run: () => $('#play').click() },
     { codes: ['KeyS'],          keys: ['S'],             label: 'Stop',                    run: () => $('#stop').click() },
     { codes: ['KeyL'],          keys: ['L'],             label: 'Open file…',              run: () => $('#load').click() },
+    { codes: ['KeyB'],          keys: ['B'],             label: 'Library (curated / recent / local / URL)', run: () => toggleLibrary() },
     { codes: ['ArrowLeft'],     keys: ['←'],             label: 'Previous order',          run: () => $('#previous').click() },
     { codes: ['ArrowRight'],    keys: ['→'],             label: 'Next order',              run: () => $('#next').click() },
     { codes: ['KeyE'],          keys: ['E'],             label: 'Toggle effects (viz on/off)', run: () => $('#toggle-visualizations').click() },
@@ -47,6 +50,8 @@ for (const entry of SHORTCUTS) {
 export function installKeyboardShortcuts() {
     document.addEventListener('keydown', e => {
         if (isTypingTarget(e.target)) return;
+        // A dialog owns the keyboard while it is open (its own keys, Esc, Tab).
+        if (isAnyModalOpen()) return;
         if (e.target?.classList?.contains('pane-resizer')) return;
         if (e.code === 'Enter' && isActivatableTarget(e.target)) return;
         const handler = codeHandlers.get(e.code);
