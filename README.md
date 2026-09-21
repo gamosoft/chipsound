@@ -106,6 +106,16 @@ Then open <http://localhost:8765/>.
 
 > **Themes & visualizations are auto-discovered from directory listings.** On startup the player fetches `./css/themes/` and `./js/visualizations/` and parses the HTML index to find all `*.css` / `*.js` files. The three servers above all enable directory listings by default. If you deploy behind a static host that disables them (some CDNs, GitHub Pages with a hand-rolled config, certain nginx setups), the picker will fall back to a single built-in theme + visualization. Either enable directory listing for those two folders, or fork in a static manifest.
 
+### Local `tracks` folder
+
+The Library (`B` → Local) lists modules from `./tracks/` next to the player. Put a `src/tracks/` folder of `.mod` / `.s3m` / `.xm` / `.it` files when you serve from `src/`. With Docker, mount your collection at runtime instead of copying it into the image:
+
+```bash
+docker run --rm -p 8765:80 -v /path/to/modules:/usr/share/caddy/tracks chipsound
+```
+
+The server needs a directory listing for that folder (Caddy in this repo and `python -m http.server` both provide one).
+
 ### Load a module by URL
 
 The player accepts a `?load=<url>` query parameter pointing to any HTTP(S) URL:
