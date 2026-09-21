@@ -267,6 +267,16 @@ async function fetchWithRetry(url, signal) {
 export async function loadFromUrl(url, { autoPlay = true, name = null } = {}) {
     if (!url) return;
 
+    // Reject anything that isn't http(s) once resolved against the page —
+    // fetch() alone doesn't stop file:/javascript:/data: schemes in every
+    // embedding (Electron, extensions), so enforce it ourselves.
+    let resolved;
+    try { resolved = new URL(url, location.href); } catch { return; }
+    if (!/^https?:$/.test(resolved.protocol)) {
+        toast('Only http(s) URLs can be loaded', { variant: 'error', duration: 5000 });
+        return;
+    }
+
     // Supersede any previous in-flight URL load.
     abortInFlightUrlLoad();
 
