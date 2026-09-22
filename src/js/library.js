@@ -1,6 +1,7 @@
-// Library modal (B) — tabbed lists of modules to load without leaving the
-// player. Tabs are plain objects so more can be added (playlists, an API
-// browser, …) with registerLibraryTab():
+// Library modal (B / Load button) — tabbed lists of modules to load without
+// leaving the player. "Open file…" at the top of the dialog hits the hidden
+// file input (same as L). Tabs are plain objects so more can be added
+// (playlists, an API browser, …) with registerLibraryTab():
 //
 //   { id, label, icon, render(body, api) }   registerLibraryTab(tab, { before: 'url' })
 //   api.load(url, { name })  fetch + play a module and close the modal
@@ -13,7 +14,8 @@
 import { $, isTypingTarget } from './dom.js';
 import { prefs } from './prefs.js';
 import { playerState } from './state.js';
-import { loadFromUrl } from './controls.js';
+import { loadFile, loadFromUrl } from './controls.js';
+import { toast } from './toast.js';
 import { createModal } from './modal.js';
 
 export function modArchiveDownloadUrl(id) {
@@ -44,17 +46,27 @@ const tabs = [];
 // this module only supplies the tab bar and tab panels.
 const modal = createModal({
     id: 'libraryOverlay',
-    title: '<i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Library',
+    title: '<i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Load',
     className: 'modal-library',
     width: 'min(680px, 92vw)',
     build(body) {
+        const openFile = document.createElement('button');
+        openFile.type = 'button';
+        openFile.className = 'library-action library-open-file';
+        openFile.title = 'Open a module from this device (L)';
+        openFile.innerHTML = '<i class="fa-solid fa-folder-open" aria-hidden="true"></i> <span class="btn-label">Open file…</span>';
+        openFile.addEventListener('click', () => $('#files').click());
+
         tabBarEl = document.createElement('div');
         tabBarEl.className = 'library-tabs';
         tabBarEl.setAttribute('role', 'tablist');
         bodyEl = document.createElement('div');
         bodyEl.className = 'library-body';
-        body.append(tabBarEl, bodyEl);
+        body.append(openFile, tabBarEl, bodyEl);
         renderTabBar();
+    },
+    onOpen(m) {
+        m.el?.querySelector('.library-open-file')?.focus({ preventScroll: true });
     },
 });
 
@@ -67,12 +79,39 @@ export function registerLibraryTab(tab, { before = null } = {}) {
 }
 
 // ---------- recent history ----------
+// URL loads persist a fetchable href. Picker / drag-drop use a `local:` key and
+// keep the File in memory for this tab so Recent can replay it until refresh.
 
-export function recordRecent({ url, name }) {
+const LOCAL_RECENT = 'local:';
+const sessionFiles = new Map(); // local: key → File
+
+function isLocalRecent(url) { return String(url || '').startsWith(LOCAL_RECENT); }
+
+export function recordRecent({ url, name, file }) {
     if (!url) return;
+    if (file) sessionFiles.set(url, file);
     const list = (prefs.recent || []).filter(r => r.url !== url);
     list.unshift({ url, name: name || url, at: Date.now() });
     prefs.recent = list.slice(0, RECENT_MAX);
+}
+
+function clearRecent() {
+    sessionFiles.clear();
+    prefs.recent = [];
+}
+
+function playRecent(r) {
+    const file = sessionFiles.get(r.url);
+    if (file) {
+        closeLibrary();
+        loadFile(file);
+        return;
+    }
+    if (isLocalRecent(r.url)) {
+        toast('That file is not kept after a refresh. Open file… or drop it again.', { variant: 'info', duration: 4000 });
+        return;
+    }
+    api.load(r.url, { name: r.name });
 }
 
 // ---------- helpers for tabs ----------
@@ -131,15 +170,20 @@ const recentTab = {
     id: 'recent', label: 'Recent', icon: 'fa-clock-rotate-left',
     render(body) {
         const items = (prefs.recent || []).map(r => ({
-            title: r.name, subtitle: hostOf(r.url), meta: relTime(r.at), url: r.url, name: r.name,
+            title: r.name,
+            subtitle: isLocalRecent(r.url) ? 'This device' : hostOf(r.url),
+            meta: relTime(r.at),
+            url: r.url,
+            name: r.name,
+            onClick: () => playRecent(r),
         }));
-        body.appendChild(api.list(items, { empty: 'Modules you load by URL (or from the other tabs) show up here.' }));
+        body.appendChild(api.list(items, { empty: 'Modules you open — file, drop, URL, or these tabs — show up here.' }));
         if (items.length) {
             const clear = document.createElement('button');
             clear.type = 'button';
-            clear.className = 'retro-button library-clear';
-            clear.textContent = 'Clear history';
-            clear.addEventListener('click', () => { prefs.recent = []; showTab('recent'); });
+            clear.className = 'library-action library-clear';
+            clear.innerHTML = '<span class="btn-label">Clear history</span>';
+            clear.addEventListener('click', () => { clearRecent(); showTab('recent'); });
             body.appendChild(clear);
         }
     },
@@ -152,7 +196,7 @@ const localTab = {
         const form = document.createElement('form');
         form.className = 'library-path';
         form.innerHTML = `<label>Folder <input type="text" class="retro-select" name="path" spellcheck="false" autocomplete="off"></label>
-            <button type="submit" class="retro-button retro-button-icon" title="Open"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>`;
+            <button type="submit" class="library-action library-action-icon" title="Open"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>`;
         const input = form.querySelector('input');
         input.value = base;
         form.addEventListener('submit', e => { e.preventDefault(); prefs.libraryPath = normalizeDir(input.value); showTab('local'); });
@@ -172,7 +216,7 @@ const localTab = {
             if (base === './tracks/') return null;
             const b = document.createElement('button');
             b.type = 'button';
-            b.className = 'retro-button library-clear';
+            b.className = 'library-action library-clear';
             b.textContent = 'Back to ./tracks/';
             b.addEventListener('click', () => { prefs.libraryPath = './tracks/'; showTab('local'); });
             return b;
@@ -215,7 +259,7 @@ const urlTab = {
         form.className = 'library-url';
         form.innerHTML = `<label>Module URL or Mod Archive id
                 <input type="text" class="retro-select" name="url" placeholder="https://… or 212083 or modarchive.org/…?query=212083" spellcheck="false" autocomplete="off"></label>
-            <button type="submit" class="retro-button">Load</button>
+            <button type="submit" class="library-action">Load</button>
             <p class="library-blurb">Any http(s) URL the server allows cross-origin, a Mod Archive module id, or a Mod Archive page / download link.</p>`;
         form.addEventListener('submit', e => {
             e.preventDefault();
@@ -339,13 +383,18 @@ export function isLibraryOpen() { return modal.isOpen(); }
 
 export function initLibrary() {
     for (const t of [curatedTab, recentTab, localTab, urlTab]) if (!tabs.includes(t)) tabs.push(t);
-    $('#browse')?.addEventListener('click', () => toggleLibrary());
+    $('#load')?.addEventListener('click', () => toggleLibrary());
     // Esc is handled by the modal primitive; ←/→ switch tabs. Global shortcuts
-    // are off while a dialog is open, so B closes the Library from here.
+    // are off while a dialog is open, so B closes and L still opens a file.
     document.addEventListener('keydown', e => {
         if (modal.isOpen() && !isTypingTarget(e.target) && e.code === 'KeyB') {
             e.preventDefault();
             modal.close();
+            return;
+        }
+        if (modal.isOpen() && !isTypingTarget(e.target) && e.code === 'KeyL') {
+            e.preventDefault();
+            $('#files').click();
             return;
         }
         if (modal.isOpen() && !isTypingTarget(e.target) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {

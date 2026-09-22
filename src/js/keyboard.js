@@ -2,7 +2,7 @@
 
 import { $, isTypingTarget } from './dom.js';
 import { cycleTheme } from './themes.js';
-import { cycleVisualization } from './controls.js';
+import { cycleVisualization, pickLocalFile } from './controls.js';
 import { toggleMixer } from './mixer.js';
 import { toggleLibrary } from './library.js';
 import { isAnyModalOpen } from './modal.js';
@@ -20,8 +20,8 @@ function isActivatableTarget(target) {
 export const SHORTCUTS = [
     { codes: ['Space', 'KeyP'], keys: ['Space', 'P'],    label: 'Play / Pause',            run: () => $('#play').click() },
     { codes: ['KeyS'],          keys: ['S'],             label: 'Stop',                    run: () => $('#stop').click() },
-    { codes: ['KeyL'],          keys: ['L'],             label: 'Open file…',              run: () => $('#load').click() },
-    { codes: ['KeyB'],          keys: ['B'],             label: 'Library (curated / recent / local / URL)', run: () => toggleLibrary() },
+    { codes: ['KeyL'],          keys: ['L'],             label: 'Open file…',              run: () => pickLocalFile() },
+    { codes: ['KeyB'],          keys: ['B'],             label: 'Load (file, curated, local, URL)', run: () => toggleLibrary() },
     { codes: ['ArrowLeft'],     keys: ['←'],             label: 'Previous order',          run: () => $('#previous').click() },
     { codes: ['ArrowRight'],    keys: ['→'],             label: 'Next order',              run: () => $('#next').click() },
     { codes: ['KeyE'],          keys: ['E'],             label: 'Toggle effects (viz on/off)', run: () => $('#toggle-visualizations').click() },

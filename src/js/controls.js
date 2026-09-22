@@ -4,7 +4,7 @@ import { $, on, setText, setEnabled } from './dom.js';
 import { playerState } from './state.js';
 import { prefs } from './prefs.js';
 import { toast, hideToast } from './toast.js';
-import { recordRecent } from './library.js';
+import { recordRecent, closeLibrary } from './library.js';
 import {
     clearSampleHighlights,
     resetTracker,
@@ -169,6 +169,9 @@ export function loadFile(file, { autoPlay = true } = {}) {
         toast(`Unsupported file type: ${file.name}`, { variant: 'warn' });
         return;
     }
+
+    closeLibrary();
+    recordRecent({ url: 'local:' + file.name, name: file.name, file });
 
     // Supersede any in-flight URL load — without this, a slow Modarchive
     // fetch (or its scheduled retry) keeps running in the background and
@@ -381,9 +384,13 @@ function wireFileInput() {
         const file = evt.target.files?.[0];
         if (!file) return;
         loadFile(file);
+        // Same input can pick the same file again after a cancel / re-open.
+        input.value = '';
     });
+}
 
-    $('#load').addEventListener('click', () => input.click());
+export function pickLocalFile() {
+    $('#files')?.click();
 }
 
 // Track dragenter/leave depth — dragleave fires across every child boundary.
