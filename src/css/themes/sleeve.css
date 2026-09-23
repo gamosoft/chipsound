@@ -41,6 +41,7 @@
     padding: 20px;
     flex-direction: column;
     gap: 12px;
+    align-self: start;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 :root.theme-sleeve .mod-info-box {
@@ -49,6 +50,7 @@
     box-shadow: none;
     padding: 0;
     min-width: 0;
+    flex: 0 0 auto;
     text-align: left;
     transition: none;
 }

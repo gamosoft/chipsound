@@ -249,16 +249,15 @@
 
 /* Samples — rebar/BOM sidebar. */
 :root.theme-foundry .sample-section { padding-left: 0; }
-:root.theme-foundry .sample-list {
+:root.theme-foundry .sample-list,
+:root.theme-foundry .playlist-rail {
     background: #0a0a0a;
     border: 1px solid #ff6a00;
     border-radius: 0;
     padding: 8px;
     scrollbar-color: #ff6a00 #1a1a1a;
 }
-:root.theme-foundry .sample-list::before {
-    content: "■ MATERIALS";
-    display: block;
+:root.theme-foundry .rail-tab {
     padding: 4px 6px 8px;
     margin-bottom: 6px;
     border-bottom: 2px solid #ff6a00;

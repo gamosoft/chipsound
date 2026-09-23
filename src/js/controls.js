@@ -5,6 +5,7 @@ import { playerState } from './state.js';
 import { prefs } from './prefs.js';
 import { toast, hideToast } from './toast.js';
 import { recordRecent, closeLibrary } from './library.js';
+import { playList, addToPlaylist, playlistLength, skipTrack } from './playlist.js';
 import {
     clearSampleHighlights,
     resetTracker,
@@ -267,8 +268,10 @@ async function fetchWithRetry(url, signal) {
     }
 }
 
+// Returns 'ok' | 'fail' | 'aborted' so the playlist can skip a dead URL
+// without treating a superseded load as a hard error.
 export async function loadFromUrl(url, { autoPlay = true, name = null } = {}) {
-    if (!url) return;
+    if (!url) return 'fail';
 
     // Supersede any previous in-flight URL load.
     abortInFlightUrlLoad();
@@ -302,39 +305,41 @@ export async function loadFromUrl(url, { autoPlay = true, name = null } = {}) {
         try {
             response = await fetchWithRetry(url, controller.signal);
         } catch (e) {
+            if (e?.name === 'AbortError' && !timedOut) return 'aborted';
             surfaceAbort(e, 'Could not load URL');
-            return;
+            return 'fail';
         }
-        if (!isCurrent()) return;
+        if (!isCurrent()) return 'aborted';
         if (!response.ok) {
             toast(`Could not load URL (HTTP ${response.status})`, { variant: 'error', duration: 5000 });
-            return;
+            return 'fail';
         }
 
         const ctype = (response.headers.get('Content-Type') || '').toLowerCase();
         if (ctype.startsWith('text/html') || ctype.startsWith('text/plain') || ctype.startsWith('application/json')) {
             toast(`URL did not return a module (${ctype || 'unknown type'})`, { variant: 'warn' });
-            return;
+            return 'fail';
         }
 
         const declared = parseInt(response.headers.get('Content-Length') || '0', 10);
         if (declared > MAX_URL_LOAD_BYTES) {
             toast(`File too large: ${(declared / 1024 / 1024).toFixed(1)} MB`, { variant: 'warn' });
-            return;
+            return 'fail';
         }
 
         let buffer;
         try {
             buffer = await response.arrayBuffer();
         } catch (e) {
+            if (e?.name === 'AbortError' && !timedOut) return 'aborted';
             surfaceAbort(e, 'Connection lost while loading URL');
-            return;
+            return 'fail';
         }
-        if (!isCurrent()) return;
+        if (!isCurrent()) return 'aborted';
 
         if (buffer.byteLength > MAX_URL_LOAD_BYTES) {
             toast(`File too large: ${(buffer.byteLength / 1024 / 1024).toFixed(1)} MB`, { variant: 'warn' });
-            return;
+            return 'fail';
         }
 
         // Resolve a *meaningful* filename. Accept the source's own name only when
@@ -344,10 +349,13 @@ export async function loadFromUrl(url, { autoPlay = true, name = null } = {}) {
         // and the path is just "/downloads.php").
         const headerName = filenameFromContentDisposition(response.headers.get('Content-Disposition'));
         const urlName = filenameFromUrl(url);
-        const filename = name                                          ? name
+        // A caller-supplied name wins only when it looks like a module file
+        // (curated `2nd_pm.s3m`). Hints like `#212083` from ?modarchive= fall
+        // through so Content-Disposition / URL labels can win.
+        const filename = (name && isAcceptedFile(name))             ? name
                        : (headerName && isAcceptedFile(headerName)) ? headerName
                        : (urlName && isAcceptedFile(urlName))       ? urlName
-                       : urlDisplayLabel(url);
+                       : urlDisplayLabel(url) || name;
         recordRecent({ url, name: filename });
 
         if (!autoPlay) setPlaying(false);
@@ -357,6 +365,7 @@ export async function loadFromUrl(url, { autoPlay = true, name = null } = {}) {
         autoPlayOnNextLoad = autoPlay;
         hideToast();
         playerState.player.loadBuffer(buffer);
+        return 'ok';
     } finally {
         clearTimeout(timeoutTimer);
         if (urlLoadAbort === controller) urlLoadAbort = null;
@@ -381,9 +390,8 @@ export function onSongLoaded() {
 function wireFileInput() {
     const input = $('#files');
     input.addEventListener('change', evt => {
-        const file = evt.target.files?.[0];
-        if (!file) return;
-        loadFile(file);
+        const files = [...(evt.target.files || [])];
+        if (files.length) ingestFiles(files, { replace: true });
         // Same input can pick the same file again after a cancel / re-open.
         input.value = '';
     });
@@ -426,9 +434,105 @@ function wireDragAndDrop() {
         e.preventDefault();
         dragDepth = 0;
         body.classList.remove('drag-over');
-        const file = e.dataTransfer.files?.[0];
-        if (file) loadFile(file);
+        const replace = e.shiftKey || !dropAddsToPlaylist();
+        void collectDropFiles(e.dataTransfer).then(files => {
+            if (files.length) ingestFiles(files, { replace });
+        });
     });
+}
+
+const PLAYLIST_CAP = 100;
+const MAX_FOLDER_DEPTH = 3;
+
+function dropAddsToPlaylist() {
+    if (playerState.isPlaying || playerState.isPaused) return true;
+    return playlistLength() > 0;
+}
+
+function ingestFiles(files, { replace }) {
+    const accepted = [];
+    let rejected = 0;
+    let capped = false;
+    for (const file of files) {
+        if (accepted.length >= PLAYLIST_CAP) { capped = true; break; }
+        if (isAcceptedFile(file.name)) accepted.push(file);
+        else rejected++;
+    }
+    if (!accepted.length) {
+        const name = files[0]?.name;
+        toast(name ? `Unsupported file type: ${name}` : 'No modules in that drop', { variant: 'warn' });
+        return;
+    }
+
+    const items = accepted.map(file => ({ file, name: file.name }));
+    const notes = [];
+    if (rejected) notes.push(`skipped ${rejected}`);
+    if (capped) notes.push(`capped at ${PLAYLIST_CAP}`);
+    const extra = notes.length ? `, ${notes.join(', ')}` : '';
+
+    if (replace) {
+        void playList(items, { autoPlay: true });
+        if (extra) toast(`Playing ${accepted.length}${extra}`, { variant: 'warn' });
+        return;
+    }
+
+    addToPlaylist(items);
+    const n = playlistLength();
+    const added = accepted.length === 1 ? accepted[0].name : `${accepted.length} tracks`;
+    toast(`Added to playlist: ${added}${extra} · ${n} total`, { variant: 'info' });
+}
+
+async function collectDropFiles(dt) {
+    const items = dt?.items;
+    if (items?.length && typeof items[0].webkitGetAsEntry === 'function') {
+        const collected = [];
+        const jobs = [];
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.kind !== 'file') continue;
+            const entry = item.webkitGetAsEntry();
+            if (entry) jobs.push(walkEntry(entry, collected, 0));
+        }
+        await Promise.all(jobs);
+        if (collected.length) return collected;
+    }
+    return [...(dt?.files || [])];
+}
+
+function entryFile(entry) {
+    return new Promise(resolve => {
+        entry.file(resolve, () => resolve(null));
+    });
+}
+
+function readAllEntries(dirEntry) {
+    const reader = dirEntry.createReader();
+    const all = [];
+    const next = () => new Promise(resolve => {
+        reader.readEntries(resolve, () => resolve([]));
+    });
+    return (async () => {
+        for (;;) {
+            const batch = await next();
+            if (!batch.length) return all;
+            all.push(...batch);
+        }
+    })();
+}
+
+async function walkEntry(entry, out, depth) {
+    if (!entry || out.length >= PLAYLIST_CAP) return;
+    if (entry.isFile) {
+        const file = await entryFile(entry);
+        if (file) out.push(file);
+        return;
+    }
+    if (!entry.isDirectory || depth >= MAX_FOLDER_DEPTH) return;
+    const children = await readAllEntries(entry);
+    for (const child of children) {
+        if (out.length >= PLAYLIST_CAP) return;
+        await walkEntry(child, out, depth + 1);
+    }
 }
 
 function wireButtons() {
@@ -465,8 +569,8 @@ function wireButtons() {
         setPlaybackState(STOPPED);
     });
 
-    $('#previous').addEventListener('click', () => navigateOrder(-1));
-    $('#next').addEventListener('click', () => navigateOrder(+1));
+    $('#previous').addEventListener('click', () => skipOrOrder(-1));
+    $('#next').addEventListener('click', () => skipOrOrder(+1));
 
     $('#toggle-visualizations').addEventListener('click', () => {
         const visible = !prefs.showVisualizations;
@@ -484,7 +588,17 @@ function wireButtons() {
     $('#show-help')?.addEventListener('click', () => openHelp());
 }
 
-function navigateOrder(delta) {
+function skipOrOrder(delta) {
+    // A mix is armed: the buttons mean tracks, like a deck. ←/→ stay order-level
+    // so pattern study still works; Shift+←/→ is the keyboard twin of these.
+    if (playlistLength() > 1) {
+        skipTrack(delta);
+        return;
+    }
+    navigateOrder(delta);
+}
+
+export function navigateOrder(delta) {
     const song = playerState.meta?.song;
     if (!song || !playerState.player) return;
 

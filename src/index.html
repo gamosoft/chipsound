@@ -120,9 +120,9 @@
         </section>
 
         <section class="controls" id="trackerControls" aria-label="Playback controls">
-            <input type="file" id="files" name="files" accept=".mod,.s3m,.xm,.it" hidden>
+            <input type="file" id="files" name="files" accept=".mod,.s3m,.xm,.it" multiple hidden>
             <!-- data-track attrs below are inert HTML markers; the click listener that reads them is injected only on chipsound.com. See README → Privacy & telemetry. -->
-            <button id="load" class="retro-button" type="button" data-track="load_clicked" aria-label="Load module (B)" title="Load: file, curated, local, URL (B)">
+            <button id="load" class="retro-button" type="button" data-track="load_clicked" aria-label="Load module (B)" title="Load: playlist, file, curated, local, URL (B)">
                 <i class="fa-solid fa-compact-disc" aria-hidden="true"></i> <span class="btn-label">Load</span>
             </button>
             <button id="play" class="retro-button" type="button" data-track="play_clicked" aria-label="Play (Space)" title="Play / Pause (Space)" disabled>
@@ -177,7 +177,12 @@
                 <div id="trackerPatterns"></div>
             </div>
             <aside class="sample-section" aria-label="Samples">
+                <div id="railTabs" class="rail-tabs" role="tablist">
+                    <button type="button" class="rail-tab" role="tab" data-rail="samples" aria-selected="true">SAMPLES</button>
+                    <button type="button" class="rail-tab" role="tab" data-rail="playlist" aria-selected="false" tabindex="-1">PLAYLIST</button>
+                </div>
                 <div id="sampleList" class="sample-list"></div>
+                <div id="playlistRail" class="playlist-rail"></div>
             </aside>
         </section>
     </main>
@@ -185,8 +190,8 @@
     <div id="dropZone" aria-hidden="true">
         <div class="drop-zone-card">
             <i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i>
-            <div class="drop-zone-title">Drop module to play</div>
-            <div class="drop-zone-hint">.mod, .s3m, .xm, .it</div>
+            <div class="drop-zone-title">Drop to play</div>
+            <div class="drop-zone-hint">.mod, .s3m, .xm, .it · playing? adds to the playlist</div>
         </div>
     </div>
 </body>

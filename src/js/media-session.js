@@ -10,6 +10,7 @@
 // allows browsers to throw on unsupported action names.
 
 import { $ } from './dom.js';
+import { skipTrack, playlistLength } from './playlist.js';
 
 const HAS_MEDIA_SESSION = typeof navigator !== 'undefined' && 'mediaSession' in navigator;
 const HAS_METADATA_CTOR = typeof MediaMetadata !== 'undefined';
@@ -28,8 +29,16 @@ export function installMediaSession() {
     safeSetAction('play',          () => $('#play')?.click());
     safeSetAction('pause',         () => $('#play')?.click());
     safeSetAction('stop',          () => $('#stop')?.click());
-    safeSetAction('previoustrack', () => $('#previous')?.click());
-    safeSetAction('nexttrack',     () => $('#next')?.click());
+    // Headset next/prev skip playlist tracks when a mix is armed; otherwise they
+    // keep today's order-skip (the on-page ←/→ buttons).
+    safeSetAction('previoustrack', () => {
+        if (playlistLength() > 1) skipTrack(-1);
+        else $('#previous')?.click();
+    });
+    safeSetAction('nexttrack',     () => {
+        if (playlistLength() > 1) skipTrack(+1);
+        else $('#next')?.click();
+    });
 }
 
 export function setMediaSessionMetadata({ title, fileName } = {}) {

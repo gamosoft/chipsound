@@ -204,6 +204,7 @@ function writeIfChanged(selector, text) {
     if (slot.lastText === text) return;
     slot.lastText = text;
     slot.node.textContent = text;
+    if (slot.node.id === 'songName') slot.node.title = text && text !== '-' ? text : '';
 }
 
 function invalidateStatusCache() {
@@ -623,11 +624,11 @@ function computeContainerBottomChrome(main) {
 
 function syncSampleListHeight() {
     const main = getTrackerMain();
-    const sampleList = $('#sampleList');
-    if (!sampleList || !main) return;
+    const section = $('.sample-section');
+    if (!section || !main) return;
     const next = `${main.offsetHeight}px`;
-    if (sampleList.style.height !== next) {
-        sampleList.style.height = next;
+    if (section.style.height !== next) {
+        section.style.height = next;
     }
 }
 

@@ -128,6 +128,16 @@ body { overflow: hidden; }
     color: var(--accent);
 }
 
+/* Long filename / title wrap inside the chip; don't grow the chip itself
+   (flex-grow/basis is the main axis, so it blows width in a row and height
+   in a stacked theme). Hover shows the full string (title attr on write). */
+.mod-info-box > div {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* ========== Controls row ========== */
 
 .controls {
@@ -447,7 +457,48 @@ html.viz-hidden .canvas-parent         { display: none; }
 .sample-section {
     position: relative;
     min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
+
+.rail-tabs {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--tracker-row-highlight);
+}
+.rail-tab,
+.playlist-item,
+.rail-clear {
+    appearance: none;
+    -webkit-appearance: none;
+}
+.rail-tab {
+    flex: 1 1 auto;
+    margin: 0;
+    padding: 4px 6px 6px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: var(--tracker-fg);
+    opacity: 0.4;
+    font: inherit;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+    cursor: pointer;
+}
+.rail-tab[aria-selected="true"] {
+    opacity: 1;
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+.rail-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
 /* Drag handle on the pane's inner edge (sits in the grid gap). */
 .pane-resizer {
@@ -484,21 +535,143 @@ body.pane-resizing { cursor: col-resize; user-select: none; }
 body.pane-resizing iframe, body.pane-resizing canvas { pointer-events: none; }
 html.samples-hidden .pane-resizer { display: none; }
 
-.sample-list {
+.sample-list,
+.playlist-rail {
     background: var(--tracker-bg);
     padding: 8px;
     display: none;
     border-radius: 4px;
     overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
     scrollbar-width: thin;
     scrollbar-color: var(--tracker-row-highlight) var(--tracker-bg);
 }
 
-.sample-list::-webkit-scrollbar { width: 8px; }
-.sample-list::-webkit-scrollbar-track { background: var(--tracker-bg); border-radius: 4px; }
-.sample-list::-webkit-scrollbar-thumb { background: var(--tracker-row-highlight); border-radius: 4px; }
-.sample-list::-webkit-scrollbar-thumb:hover {
+.sample-list::-webkit-scrollbar,
+.playlist-rail::-webkit-scrollbar { width: 8px; }
+.sample-list::-webkit-scrollbar-track,
+.playlist-rail::-webkit-scrollbar-track { background: var(--tracker-bg); border-radius: 4px; }
+.sample-list::-webkit-scrollbar-thumb,
+.playlist-rail::-webkit-scrollbar-thumb { background: var(--tracker-row-highlight); border-radius: 4px; }
+.sample-list::-webkit-scrollbar-thumb:hover,
+.playlist-rail::-webkit-scrollbar-thumb:hover {
     background: color-mix(in srgb, var(--tracker-row-highlight) 70%, white);
+}
+
+.sample-section.rail-showing-playlist #sampleList { display: none !important; }
+.sample-section.rail-showing-playlist .playlist-rail {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+/* Theme chrome used to stamp a fake title on .sample-list; the tabs are that title now. */
+.sample-list::before,
+.playlist-rail::before {
+    content: none !important;
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: none !important;
+}
+
+.playlist-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+.playlist-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1.6em;
+    align-items: center;
+    gap: 0;
+}
+.playlist-item {
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 2em minmax(0, 1fr);
+    gap: 6px;
+    align-items: center;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-radius: 2px;
+    padding: 4px;
+    min-height: 24px;
+    color: var(--tracker-fg);
+    font-family: monospace;
+    font-size: 12px;
+    cursor: pointer;
+}
+.playlist-row:hover .playlist-item,
+.playlist-item:hover, .playlist-item:focus-visible {
+    background: var(--tracker-row-highlight);
+    outline: none;
+}
+.playlist-remove {
+    appearance: none;
+    -webkit-appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6em;
+    height: 24px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--tracker-fg);
+    opacity: 0;
+    cursor: pointer;
+    font-size: 11px;
+}
+.playlist-row:hover .playlist-remove,
+.playlist-row:focus-within .playlist-remove,
+.playlist-remove:focus-visible {
+    opacity: 0.7;
+}
+.playlist-remove:hover, .playlist-remove:focus-visible {
+    opacity: 1;
+    color: var(--accent);
+    outline: none;
+}
+@media (hover: none) {
+    .playlist-remove { opacity: 0.55; }
+}
+.playlist-item.now-playing { color: var(--accent); }
+.playlist-item-index {
+    opacity: 0.55;
+    font-variant-numeric: tabular-nums;
+}
+.playlist-item-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.playlist-empty { color: var(--tracker-fg); opacity: 0.55; padding: 8px 4px; font-size: 12px; }
+.rail-clear {
+    flex-shrink: 0;
+    margin-top: 6px;
+    padding: 4px 8px;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--tracker-row-highlight);
+    border-radius: 3px;
+    color: var(--tracker-fg);
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
+}
+.rail-clear:hover, .rail-clear:focus-visible {
+    border-color: var(--accent);
+    color: var(--accent);
+    outline: none;
 }
 
 .sample-item {
@@ -780,7 +953,9 @@ kbd {
     .channel-cell { min-width: 60px; font-size: 10px; }
     .row-label, .header-label { min-width: 30px; font-size: 10px; }
 
-    .sample-list { margin-top: 16px; height: auto !important; max-height: 200px; }
+    .sample-section { height: auto !important; }
+    .rail-tabs { margin-top: 16px; }
+    .sample-list, .playlist-rail { margin-top: 0; height: auto !important; max-height: 200px; }
     .pane-resizer { display: none; }
 
     .retro-button { padding: 4px 8px; font-size: 10px; flex: 1 1 calc(50% - 4px); }
@@ -919,10 +1094,11 @@ kbd {
     align-self: center;
 }
 
-/* Wide rows: the slider is the control surface, so give it the room. */
+/* Cap column width so selects don't stretch across leftover mixer space. */
 .mixer-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 380px));
+    justify-content: start;
     gap: 6px 28px;
 }
 
@@ -989,7 +1165,7 @@ kbd {
 .mixer-value.scrubbing { border-color: var(--accent); }
 
 @media (max-width: 1024px) {
-    .mixer-grid { grid-template-columns: 1fr; }
+    .mixer-grid { grid-template-columns: minmax(260px, 380px); }
 }
 @media (max-width: 640px) {
     #toggle-mixer { display: none; }
@@ -1062,6 +1238,7 @@ kbd {
     border-bottom: 1px solid var(--popup-border);
     margin-bottom: 10px;
     flex: 0 0 auto;
+    overflow: hidden;
 }
 .library-tab {
     background: transparent;
@@ -1070,9 +1247,10 @@ kbd {
     color: var(--popup-muted);
     font-family: inherit;
     font-size: 12px;
-    padding: 6px 12px;
+    padding: 6px 10px;
     border-radius: 4px 4px 0 0;
     cursor: pointer;
+    flex: 0 0 auto;
 }
 .library-tab:hover { color: var(--popup-fg); }
 .library-tab.active {
@@ -1101,22 +1279,33 @@ kbd {
 .library-listing {
     flex: 1 1 auto;
     min-height: 0;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Popup scrollbars (help body, library lists). Tokens follow the theme. */
+.modal-body,
+.library-list,
+.library-listing {
     scrollbar-width: thin;
     scrollbar-color: var(--popup-border) var(--popup-surface);
 }
+.modal-body::-webkit-scrollbar,
 .library-list::-webkit-scrollbar,
 .library-listing::-webkit-scrollbar { width: 8px; }
+.modal-body::-webkit-scrollbar-track,
 .library-list::-webkit-scrollbar-track,
 .library-listing::-webkit-scrollbar-track {
     background: var(--popup-surface);
     border-radius: 4px;
 }
+.modal-body::-webkit-scrollbar-thumb,
 .library-list::-webkit-scrollbar-thumb,
 .library-listing::-webkit-scrollbar-thumb {
     background: var(--popup-border);
     border-radius: 4px;
 }
+.modal-body::-webkit-scrollbar-thumb:hover,
 .library-list::-webkit-scrollbar-thumb:hover,
 .library-listing::-webkit-scrollbar-thumb:hover {
     background: var(--popup-accent);
@@ -1158,6 +1347,10 @@ kbd {
 .library-item-meta { color: var(--popup-faint); font-size: 10px; min-width: 3em; text-align: right; }
 .library-item.now-playing .library-item-title { color: var(--popup-accent); }
 .library-empty { color: var(--popup-muted); padding: 16px 8px; }
+.library-list:has(.library-empty),
+.library-listing:has(.library-empty) {
+    overflow: hidden;
+}
 
 .library-path, .library-url {
     display: flex;

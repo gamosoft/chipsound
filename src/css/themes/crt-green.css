@@ -142,6 +142,13 @@
 }
 
 /* Tracker driven by --tracker-* tokens above. No text-shadow on cells. */
-:root.theme-crt-green .sample-list { background: #021006; }
+:root.theme-crt-green .sample-list,
+:root.theme-crt-green .playlist-rail { background: #021006; }
+:root.theme-crt-green .rail-tab {
+    color: var(--crt-green);
+    font-family: "Consolas", "Courier New", monospace;
+    letter-spacing: 2px;
+    border-bottom-color: var(--crt-green-dim);
+}
 :root.theme-crt-green .canvas-parent { background: #020a04; }
 :root.theme-crt-green .visualization-canvas { background: #010604; border-color: var(--crt-green-dim); }

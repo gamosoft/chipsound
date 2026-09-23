@@ -46,6 +46,12 @@
     display: inline;
     color: #f9fafb;
 }
+:root.theme-statusline .mod-info-box:has(#fileName) > div,
+:root.theme-statusline .mod-info-box:has(#songName) > div {
+    display: inline-block;
+    max-width: 18em;
+    vertical-align: bottom;
+}
 :root.theme-statusline .mod-info-box + .mod-info-box {
     border-left: 1px solid #2a2f3b;
     padding-left: 10px;

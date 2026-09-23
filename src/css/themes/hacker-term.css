@@ -135,7 +135,8 @@
 
 /* Sample list = ls -la output. */
 :root.theme-hacker-term .sample-section { padding-left: 4px; }
-:root.theme-hacker-term .sample-list {
+:root.theme-hacker-term .sample-list,
+:root.theme-hacker-term .playlist-rail {
     background: #000000;
     border: 1px solid rgba(51, 255, 51, 0.4);
     border-radius: 0;
@@ -143,9 +144,7 @@
     scrollbar-color: #33ff33 transparent;
     position: relative;
 }
-:root.theme-hacker-term .sample-list::before {
-    content: "$ ls -la samples/";
-    display: block;
+:root.theme-hacker-term .rail-tab {
     padding: 0 0 6px;
     margin-bottom: 4px;
     border-bottom: 1px solid rgba(51, 255, 51, 0.3);

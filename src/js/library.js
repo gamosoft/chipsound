@@ -7,20 +7,24 @@
 //   api.load(url, { name })  fetch + play a module and close the modal
 //   api.list(items)          helper: render [{ title, subtitle, url, meta }]
 //
-// Built-in tabs: Curated (the chipsound.com picks), Recent (URL history),
-// Local (a same-origin directory listing, e.g. ./tracks/), and URL
-// (any http(s) URL or a Mod Archive id / link).
+// Built-in tabs: Recent, Local, URL, and Curated.
 
 import { $, isTypingTarget } from './dom.js';
 import { prefs } from './prefs.js';
 import { playerState } from './state.js';
-import { loadFile, loadFromUrl } from './controls.js';
+import { playNow, playList } from './playlist.js';
 import { toast } from './toast.js';
 import { createModal } from './modal.js';
 
 export function modArchiveDownloadUrl(id) {
     if (!id || !/^\d+$/.test(String(id))) return null;
     return `https://api.modarchive.org/downloads.php?moduleid=${id}`;
+}
+
+// `?modarchive=212083,212701` → numeric ids, junk tokens dropped.
+export function parseModArchiveIds(raw) {
+    if (!raw) return [];
+    return String(raw).split(',').map(s => s.trim()).filter(id => /^\d+$/.test(id));
 }
 
 // The six sample tracks from the chipsound.com landing page.
@@ -104,7 +108,7 @@ function playRecent(r) {
     const file = sessionFiles.get(r.url);
     if (file) {
         closeLibrary();
-        loadFile(file);
+        playNow({ file, name: file.name });
         return;
     }
     if (isLocalRecent(r.url)) {
@@ -119,7 +123,7 @@ function playRecent(r) {
 const api = {
     load(url, { name } = {}) {
         closeLibrary();
-        loadFromUrl(url, { autoPlay: true, name });
+        playNow({ url, name }, { autoPlay: true });
     },
     list(items, { empty = 'Nothing here yet.' } = {}) {
         const ul = document.createElement('ul');
@@ -136,7 +140,9 @@ const api = {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'library-item' + (it.kind === 'dir' ? ' library-dir' : '');
-            if (it.url && playerState.fileName && it.name === playerState.fileName) btn.classList.add('now-playing');
+            if (it.current || (it.url && playerState.fileName && it.name === playerState.fileName)) {
+                btn.classList.add('now-playing');
+            }
             btn.innerHTML = `<i class="fa-solid ${it.kind === 'dir' ? 'fa-folder' : 'fa-play'}" aria-hidden="true"></i>
                 <span class="library-item-title"></span><span class="library-item-sub"></span><span class="library-item-meta"></span>`;
             btn.querySelector('.library-item-title').textContent = it.title;
@@ -258,14 +264,27 @@ const urlTab = {
         const form = document.createElement('form');
         form.className = 'library-url';
         form.innerHTML = `<label>Module URL or Mod Archive id
-                <input type="text" name="url" placeholder="https://… or 212083 or modarchive.org/…?query=212083" spellcheck="false" autocomplete="off"></label>
+                <input type="text" name="url" placeholder="https://… or 212083 or 212083,212701" spellcheck="false" autocomplete="off"></label>
             <button type="submit" class="library-action">Load</button>
-            <p class="library-blurb">Any http(s) URL the server allows cross-origin, a Mod Archive module id, or a Mod Archive page / download link.</p>`;
+            <p class="library-blurb">Any http(s) URL the server allows cross-origin, a Mod Archive id, several ids separated by commas, or a Mod Archive page / download link.</p>`;
         form.addEventListener('submit', e => {
             e.preventDefault();
             const raw = form.elements.url.value.trim();
-            const url = resolveUserUrl(raw);
-            if (!url) { form.querySelector('input').setCustomValidity('Enter a URL or a numeric Mod Archive id'); form.reportValidity(); return; }
+            const ids = parseModArchiveIds(raw);
+            if (ids.length > 1) {
+                closeLibrary();
+                playList(ids.map(id => ({
+                    url: modArchiveDownloadUrl(id),
+                    name: `#${id}`,
+                })), { autoPlay: true });
+                return;
+            }
+            const url = ids.length === 1 ? modArchiveDownloadUrl(ids[0]) : resolveUserUrl(raw);
+            if (!url) {
+                form.querySelector('input').setCustomValidity('Enter a URL, a Mod Archive id, or several ids separated by commas');
+                form.reportValidity();
+                return;
+            }
             api.load(url);
         });
         form.querySelector('input').addEventListener('input', e => e.target.setCustomValidity(''));
@@ -370,7 +389,9 @@ export async function showTab(id) {
 
 export function openLibrary(tabId) {
     modal.open();
-    showTab(tabId || prefs.libraryTab || 'curated');
+    let id = tabId || prefs.libraryTab || 'curated';
+    if (id === 'playlist' || id === 'queue') id = 'curated';
+    showTab(id);
 }
 
 export function closeLibrary() { modal.close(); }
@@ -382,7 +403,7 @@ export function toggleLibrary() {
 export function isLibraryOpen() { return modal.isOpen(); }
 
 export function initLibrary() {
-    for (const t of [curatedTab, recentTab, localTab, urlTab]) if (!tabs.includes(t)) tabs.push(t);
+    for (const t of [recentTab, localTab, urlTab, curatedTab]) if (!tabs.includes(t)) tabs.push(t);
     $('#load')?.addEventListener('click', () => toggleLibrary());
     // Esc is handled by the modal primitive; ←/→ switch tabs. Global shortcuts
     // are off while a dialog is open, so B closes and L still opens a file.

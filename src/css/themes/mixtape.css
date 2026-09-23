@@ -200,15 +200,14 @@
 
 /* Samples = B-side track index. */
 :root.theme-mixtape .sample-section { padding-left: 0; border-left: 1.5px solid #2b2419; }
-:root.theme-mixtape .sample-list {
+:root.theme-mixtape .sample-list,
+:root.theme-mixtape .playlist-rail {
     background: #e6d6b3;
     border: none;
     border-radius: 0;
     padding: 8px;
 }
-:root.theme-mixtape .sample-list::before {
-    content: "B-SIDE";
-    display: block;
+:root.theme-mixtape .rail-tab {
     padding-bottom: 6px;
     margin-bottom: 6px;
     border-bottom: 2px solid #2b2419;

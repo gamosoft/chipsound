@@ -124,16 +124,15 @@
 }
 
 :root.theme-bauhaus .sample-section { padding-left: 4px; }
-:root.theme-bauhaus .sample-list {
+:root.theme-bauhaus .sample-list,
+:root.theme-bauhaus .playlist-rail {
     background: #eab308;
     border: 4px solid #000000;
     border-radius: 0;
     padding: 6px 8px;
     scrollbar-color: #000000 #eab308;
 }
-:root.theme-bauhaus .sample-list::before {
-    content: "SAMPLES";
-    display: block;
+:root.theme-bauhaus .rail-tab {
     padding: 4px 6px;
     margin-bottom: 4px;
     background: #000000;
