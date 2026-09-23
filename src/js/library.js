@@ -12,7 +12,7 @@
 import { $, isTypingTarget } from './dom.js';
 import { prefs } from './prefs.js';
 import { playerState } from './state.js';
-import { playNow, jumpTo, queueSnapshot, onQueueChange, clearUpcoming } from './queue.js';
+import { playNow, playList, jumpTo, queueSnapshot, onQueueChange, clearUpcoming } from './queue.js';
 import { toast } from './toast.js';
 import { createModal } from './modal.js';
 
@@ -166,7 +166,7 @@ const playlistTab = {
         p.className = 'library-blurb';
         p.textContent = snap.items.length
             ? 'This mix lives in this tab only — refresh clears it. Click a row to jump.'
-            : 'Drop several files, pick more than one with Open file…, or open a ?modarchive=1,2,3 link.';
+            : 'Drop several files, pick more than one with Open file…, paste comma-separated ids in URL, or open a ?modarchive=1,2,3 link.';
         body.appendChild(p);
         body.appendChild(api.list(snap.items.map((r, i) => ({
             title: r.title,
@@ -296,14 +296,27 @@ const urlTab = {
         const form = document.createElement('form');
         form.className = 'library-url';
         form.innerHTML = `<label>Module URL or Mod Archive id
-                <input type="text" name="url" placeholder="https://… or 212083 or modarchive.org/…?query=212083" spellcheck="false" autocomplete="off"></label>
+                <input type="text" name="url" placeholder="https://… or 212083 or 212083,212701" spellcheck="false" autocomplete="off"></label>
             <button type="submit" class="library-action">Load</button>
-            <p class="library-blurb">Any http(s) URL the server allows cross-origin, a Mod Archive module id, or a Mod Archive page / download link.</p>`;
+            <p class="library-blurb">Any http(s) URL the server allows cross-origin, a Mod Archive id, several ids separated by commas, or a Mod Archive page / download link.</p>`;
         form.addEventListener('submit', e => {
             e.preventDefault();
             const raw = form.elements.url.value.trim();
-            const url = resolveUserUrl(raw);
-            if (!url) { form.querySelector('input').setCustomValidity('Enter a URL or a numeric Mod Archive id'); form.reportValidity(); return; }
+            const ids = parseModArchiveIds(raw);
+            if (ids.length > 1) {
+                closeLibrary();
+                playList(ids.map(id => ({
+                    url: modArchiveDownloadUrl(id),
+                    name: `#${id}`,
+                })), { autoPlay: true });
+                return;
+            }
+            const url = ids.length === 1 ? modArchiveDownloadUrl(ids[0]) : resolveUserUrl(raw);
+            if (!url) {
+                form.querySelector('input').setCustomValidity('Enter a URL, a Mod Archive id, or several ids separated by commas');
+                form.reportValidity();
+                return;
+            }
             api.load(url);
         });
         form.querySelector('input').addEventListener('input', e => e.target.setCustomValidity(''));

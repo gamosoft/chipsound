@@ -7,7 +7,7 @@
 
 import { $ } from './dom.js';
 import { playerState } from './state.js';
-import { loadFile, loadFromUrl } from './controls.js';
+import { loadFile, loadFromUrl, setPlaying } from './controls.js';
 
 const items = [];
 let index = -1;
@@ -67,7 +67,14 @@ async function loadCurrent({ autoPlay }) {
         loadFile(item.file, { autoPlay });
         return 'ok';
     }
-    if (item.url) return loadFromUrl(item.url, { autoPlay, name: item.name || null });
+    if (item.url) {
+        const result = await loadFromUrl(item.url, { autoPlay, name: item.name || null });
+        if (result === 'ok' && playerState.fileName) {
+            item.name = playerState.fileName;
+            emit();
+        }
+        return result;
+    }
     return 'fail';
 }
 
@@ -77,7 +84,7 @@ async function loadFromHere({ autoPlay, direction = 1 }) {
     while (index >= 0 && index < items.length) {
         const result = await loadCurrent({ autoPlay });
         if (result === 'ok') return true; // busy until metadata
-        if (result === 'aborted') return false; // the load that aborted us owns busy
+        if (result === 'aborted') return 'aborted'; // the load that aborted us owns busy
         index += direction;
         emit();
     }
@@ -92,6 +99,13 @@ async function loadFromHere({ autoPlay, direction = 1 }) {
     return false;
 }
 
+async function loadFromHereOrStop(opts) {
+    const result = await loadFromHere(opts);
+    if (result === true) return true;
+    if (result !== 'aborted') setPlaying(false);
+    return false;
+}
+
 export async function playList(newItems, { autoPlay = true } = {}) {
     const next = (newItems || []).filter(Boolean);
     items.length = 0;
@@ -103,7 +117,7 @@ export async function playList(newItems, { autoPlay = true } = {}) {
     items.push(...next);
     index = 0;
     emit();
-    return loadFromHere({ autoPlay, direction: 1 });
+    return loadFromHereOrStop({ autoPlay, direction: 1 });
 }
 
 export function playNow(item, opts) {
@@ -117,7 +131,7 @@ export function enqueue(newItems) {
     items.push(...next);
     if (index < 0) index = 0;
     emit();
-    if (startedEmpty) void loadFromHere({ autoPlay: true, direction: 1 });
+    if (startedEmpty) void loadFromHereOrStop({ autoPlay: true, direction: 1 });
     return next.length;
 }
 
@@ -125,7 +139,7 @@ export async function advance({ autoPlay = true } = {}) {
     if (index + 1 >= items.length) return false;
     index += 1;
     emit();
-    return loadFromHere({ autoPlay, direction: 1 });
+    return loadFromHereOrStop({ autoPlay, direction: 1 });
 }
 
 export async function jumpTo(i) {
@@ -135,7 +149,7 @@ export async function jumpTo(i) {
     emit();
     const autoPlay = playerState.isPlaying || playerState.isPaused;
     playerState.player?.stop();
-    return loadFromHere({ autoPlay, direction: 1 });
+    return loadFromHereOrStop({ autoPlay, direction: 1 });
 }
 
 export function clearUpcoming() {
@@ -170,5 +184,5 @@ export async function skipTrack(delta) {
     emit();
     const autoPlay = playerState.isPlaying || playerState.isPaused;
     playerState.player?.stop();
-    return loadFromHere({ autoPlay, direction: delta > 0 ? 1 : -1 });
+    return loadFromHereOrStop({ autoPlay, direction: delta > 0 ? 1 : -1 });
 }

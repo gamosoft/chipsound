@@ -133,7 +133,7 @@ https://chipsound.com/player.html?modarchive=212083
 https://chipsound.com/player.html?modarchive=212083,212701,48357
 ```
 
-A comma-separated `?modarchive=` plays those modules in order. Mixer **Loop** is still per-module (Play once, then the playlist advances; Forever never yields). Drop several files or a folder to build a playlist; drop while playing (or onto an existing mix) appends, `Shift+drop` replaces. `L` with several files starts a new mix. Load → Playlist: click a row to jump; Clear upcoming keeps the current track. Headset next/prev skip tracks while a mix is playing.
+A comma-separated `?modarchive=` plays those modules in order. The Load → URL box accepts the same list (`212083,212701`). Mixer **Loop** is still per-module (Play once, then the playlist advances; Forever never yields). Drop several files or a folder to build a playlist; drop while playing (or onto an existing mix) appends, `Shift+drop` replaces. `L` with several files starts a new mix. Load → Playlist: click a row to jump; Clear upcoming keeps the current track. Headset next/prev skip tracks while a mix is playing.
 
 > **Loading from The Mod Archive.** Modarchive's `downloads.php` endpoint sends the right CORS headers and works directly, but the `?` inside the inner URL must be percent-encoded (`%3F`), otherwise the outer query parser splits the URL in two:
 

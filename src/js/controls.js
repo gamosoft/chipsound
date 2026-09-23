@@ -349,10 +349,13 @@ export async function loadFromUrl(url, { autoPlay = true, name = null } = {}) {
         // and the path is just "/downloads.php").
         const headerName = filenameFromContentDisposition(response.headers.get('Content-Disposition'));
         const urlName = filenameFromUrl(url);
-        const filename = name                                          ? name
+        // A caller-supplied name wins only when it looks like a module file
+        // (curated `2nd_pm.s3m`). Hints like `#212083` from ?modarchive= fall
+        // through so Content-Disposition / URL labels can win.
+        const filename = (name && isAcceptedFile(name))             ? name
                        : (headerName && isAcceptedFile(headerName)) ? headerName
                        : (urlName && isAcceptedFile(urlName))       ? urlName
-                       : urlDisplayLabel(url);
+                       : urlDisplayLabel(url) || name;
         recordRecent({ url, name: filename });
 
         if (!autoPlay) setPlaying(false);
@@ -595,7 +598,7 @@ function skipOrOrder(delta) {
     navigateOrder(delta);
 }
 
-function navigateOrder(delta) {
+export function navigateOrder(delta) {
     const song = playerState.meta?.song;
     if (!song || !playerState.player) return;
 

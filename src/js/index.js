@@ -171,14 +171,18 @@ function bootstrapPlayer() {
             releaseQueueBusy();
             return;
         }
-        if (kind === 'load') {
+        if (kind === 'load' || kind === 'ptr') {
             const name = playerState.fileName || 'module';
             toast(`Could not load: ${name}`, { variant: 'error', duration: 5000 });
-        } else {
-            toast(`Playback error: ${reason}`, { variant: 'error', duration: 5000 });
+            ignoreEnded = true;
+            void finishOrAdvance();
+            return;
         }
-        ignoreEnded = true;
-        void finishOrAdvance();
+        toast(`Playback error: ${reason}`, { variant: 'error', duration: 5000 });
+        setPlaying(false);
+        stopTicker();
+        ignoreEnded = false;
+        releaseQueueBusy();
     });
 }
 
@@ -188,6 +192,7 @@ function finishOrAdvance() {
     endChain = endChain.catch(() => {}).then(async () => {
         const advanced = await advance({ autoPlay: true });
         if (advanced) return;
+        if (queueBusy()) return;
         setPlaying(false);
         stopTicker();
         ignoreEnded = false;
