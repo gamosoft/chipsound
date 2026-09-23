@@ -275,10 +275,7 @@
 }
 
 :root.theme-mixtape .retro-select,
-:root.theme-mixtape .subsong-control,
-:root.theme-mixtape .viz-control,
-:root.theme-mixtape .theme-control,
-:root.theme-mixtape .volume-control {
+:root.theme-mixtape .chip {
     background: linear-gradient(180deg, #3a3026 0%, #1a1612 100%);
     border: 1px solid #050300;
     border-radius: 2px;

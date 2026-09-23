@@ -171,10 +171,7 @@
 }
 
 :root.theme-foundry .retro-select,
-:root.theme-foundry .subsong-control,
-:root.theme-foundry .viz-control,
-:root.theme-foundry .theme-control,
-:root.theme-foundry .volume-control {
+:root.theme-foundry .chip {
     background: #2a2a2a;
     border: 1px solid #0a0a0a;
     border-radius: 0;

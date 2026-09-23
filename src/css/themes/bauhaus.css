@@ -190,10 +190,7 @@
 :root.theme-bauhaus .retro-button:disabled { opacity: 0.4; }
 
 :root.theme-bauhaus .retro-select,
-:root.theme-bauhaus .subsong-control,
-:root.theme-bauhaus .viz-control,
-:root.theme-bauhaus .theme-control,
-:root.theme-bauhaus .volume-control {
+:root.theme-bauhaus .chip {
     background: #ffffff;
     color: #000000;
     border: 2px solid #000000;

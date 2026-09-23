@@ -121,10 +121,7 @@
 }
 
 :root.theme-field-journal .retro-button,
-:root.theme-field-journal .volume-control,
-:root.theme-field-journal .subsong-control,
-:root.theme-field-journal .viz-control,
-:root.theme-field-journal .theme-control {
+:root.theme-field-journal .chip {
     background: rgba(245, 241, 230, 0.5);
     color: var(--ink);
     border: 1.5px solid var(--ink);

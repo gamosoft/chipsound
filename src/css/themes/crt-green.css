@@ -119,20 +119,14 @@
 /* Chrome — text-shadow only on static chips; mod-info updates per row tick. */
 :root.theme-crt-green .mod-info-box,
 :root.theme-crt-green .retro-button,
-:root.theme-crt-green .volume-control,
-:root.theme-crt-green .subsong-control,
-:root.theme-crt-green .viz-control,
-:root.theme-crt-green .theme-control {
+:root.theme-crt-green .chip {
     background: #051a0a;
     border-color: var(--crt-green-dim);
     color: var(--crt-green);
     box-shadow: 2px 2px 0 #000;
 }
 :root.theme-crt-green .retro-button,
-:root.theme-crt-green .volume-control,
-:root.theme-crt-green .subsong-control,
-:root.theme-crt-green .viz-control,
-:root.theme-crt-green .theme-control {
+:root.theme-crt-green .chip {
     text-shadow: 0 0 3px var(--crt-glow);
 }
 :root.theme-crt-green .mod-info-box span { color: var(--crt-green-dim); }

@@ -253,10 +253,7 @@
 }
 
 :root.theme-pocket .retro-select,
-:root.theme-pocket .subsong-control,
-:root.theme-pocket .viz-control,
-:root.theme-pocket .theme-control,
-:root.theme-pocket .volume-control {
+:root.theme-pocket .chip {
     background: radial-gradient(circle at 30% 30%, #d4583a 0%, #8a3018 80%);
     color: #efe4d2;
     border: 1px solid #4a1a08;

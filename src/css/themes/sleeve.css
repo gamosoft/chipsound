@@ -82,10 +82,7 @@
 :root.theme-sleeve .retro-button { justify-content: flex-start; width: 100%; }
 
 :root.theme-sleeve .retro-button,
-:root.theme-sleeve .volume-control,
-:root.theme-sleeve .subsong-control,
-:root.theme-sleeve .viz-control,
-:root.theme-sleeve .theme-control {
+:root.theme-sleeve .chip {
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 8px;
@@ -94,10 +91,7 @@
 }
 
 /* Picker labels share the muted micro-label tone; <select> stays bright. */
-:root.theme-sleeve .volume-control,
-:root.theme-sleeve .subsong-control,
-:root.theme-sleeve .viz-control,
-:root.theme-sleeve .theme-control {
+:root.theme-sleeve .chip {
     color: #94a3b8;
 }
 

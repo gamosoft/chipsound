@@ -164,10 +164,7 @@
 
 /* Chip chrome matches the button slab; slider accent flips to cream below. */
 :root.theme-newspaper .retro-select,
-:root.theme-newspaper .subsong-control,
-:root.theme-newspaper .viz-control,
-:root.theme-newspaper .theme-control,
-:root.theme-newspaper .volume-control {
+:root.theme-newspaper .chip {
     background: #1a1a1a;
     border: 1px solid #1a1a1a;
     border-radius: 0;

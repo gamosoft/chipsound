@@ -1,11 +1,19 @@
-/* Baseline chrome + themable tokens. Themes (themes/*.css) override these. */
+/* Baseline chrome + themable tokens. Themes (themes/*.css) override these.
+ *
+ * Three paint layers — keep them apart or a new control inherits the wrong skin:
+ *   transport  .retro-button / .chip     (toolbar; themes restyle these)
+ *   on-state   --play-on-*               (Play while playing, latched toggles)
+ *   dialogs    --popup-*                 (modals, toasts; derived from tracker)
+ * Don't restyle dialogs from .retro-button. If --tracker-bg is transparent,
+ * set --play-on-fg to an opaque color.
+ */
 
 *, *::before, *::after { box-sizing: border-box; }
 
 :root {
     --accent: #4ade80;
 
-    /* Play-while-playing + latched toggles (Samples, Effects, Mixer, …). */
+    /* Play-while-playing + latched toggles. --play-on-fg must be opaque. */
     --play-on-bg:     var(--accent);
     --play-on-fg:     var(--tracker-bg);
     --play-on-border: var(--accent);
@@ -214,25 +222,32 @@ body { overflow: hidden; }
     background: transparent;
 }
 
-/* Dim chip wrappers whose <select> child is disabled. */
-.subsong-control:has(.retro-select:disabled),
-.viz-control:has(.retro-select:disabled) {
+/* Dim chips whose <select> is disabled. */
+.chip:has(.retro-select:disabled) {
     opacity: 0.4;
     cursor: not-allowed;
 }
 
-.volume-control {
+/* Toolbar chips (theme / viz / subsong / volume). Paint lives here so a
+   new picker is themed; widths stay on the specific class. */
+.chip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     background: #2a2a2a;
     border: 2px solid #4a4a4a;
     border-radius: 4px;
-    padding: 6px 12px;
+    padding: 6px 10px;
     box-shadow: 2px 2px 0 #000;
     font-size: 12px;
-    flex: 0 1 200px;
+    flex: 0 1 220px;
     min-width: 120px;
+}
+.chip[hidden] { display: none; }
+
+.volume-control {
+    padding: 6px 12px;
+    flex: 0 1 200px;
 }
 
 .volume-control input[type="range"] {
@@ -246,36 +261,6 @@ body { overflow: hidden; }
     flex: 0 0 auto;
     padding: 6px 10px;
 }
-
-.subsong-control {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #2a2a2a;
-    border: 2px solid #4a4a4a;
-    border-radius: 4px;
-    padding: 6px 10px;
-    box-shadow: 2px 2px 0 #000;
-    font-size: 12px;
-    flex: 0 1 220px;
-    min-width: 120px;
-}
-.subsong-control[hidden] { display: none; }
-
-.viz-control {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #2a2a2a;
-    border: 2px solid #4a4a4a;
-    border-radius: 4px;
-    padding: 6px 10px;
-    box-shadow: 2px 2px 0 #000;
-    font-size: 12px;
-    flex: 0 1 220px;
-    min-width: 120px;
-}
-.viz-control[hidden] { display: none; }
 
 .retro-select {
     background: #1a1a1a;
@@ -835,8 +820,7 @@ kbd {
     }
 
     /* Viz + theme pickers share row 2 (~50% basis each). */
-    .controls .viz-control,
-    .controls .theme-control {
+    .controls .chip {
         flex: 1 1 calc(50% - 8px) !important;
         min-width: 0 !important;
     }
@@ -876,20 +860,10 @@ kbd {
 }
 
 
-/* ========== Theme-picker chip ========== */
+/* Theme-picker chip — slightly narrower than viz/subsong. */
 
 .theme-control {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #2a2a2a;
-    border: 2px solid #4a4a4a;
-    border-radius: 4px;
-    padding: 6px 10px;
-    box-shadow: 2px 2px 0 #000;
-    font-size: 12px;
     flex: 0 1 200px;
-    min-width: 120px;
 }
 
 

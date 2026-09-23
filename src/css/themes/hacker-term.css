@@ -199,10 +199,7 @@
 :root.theme-hacker-term .retro-button:disabled { opacity: 0.4; }
 
 :root.theme-hacker-term .retro-select,
-:root.theme-hacker-term .subsong-control,
-:root.theme-hacker-term .viz-control,
-:root.theme-hacker-term .theme-control,
-:root.theme-hacker-term .volume-control {
+:root.theme-hacker-term .chip {
     background: transparent;
     color: #33ff33;
     border: 1px solid #33ff33;

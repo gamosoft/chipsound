@@ -105,10 +105,7 @@
 }
 
 :root.theme-comic .retro-button,
-:root.theme-comic .volume-control,
-:root.theme-comic .subsong-control,
-:root.theme-comic .viz-control,
-:root.theme-comic .theme-control {
+:root.theme-comic .chip {
     background: var(--comic-red);
     color: #fff;
     border: 3px solid var(--comic-ink);

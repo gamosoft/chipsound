@@ -154,10 +154,7 @@
 }
 
 :root.theme-skinplayer .retro-select,
-:root.theme-skinplayer .subsong-control,
-:root.theme-skinplayer .viz-control,
-:root.theme-skinplayer .theme-control,
-:root.theme-skinplayer .volume-control {
+:root.theme-skinplayer .chip {
     background: linear-gradient(180deg, #5a6e8a 0%, #2a3850 100%);
     border: 1px solid #050a14;
     border-radius: 2px;

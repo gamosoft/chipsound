@@ -152,10 +152,7 @@
 }
 
 :root.theme-subway .retro-select,
-:root.theme-subway .subsong-control,
-:root.theme-subway .viz-control,
-:root.theme-subway .theme-control,
-:root.theme-subway .volume-control {
+:root.theme-subway .chip {
     background: #050505;
     border: 1px solid #663300;
     border-radius: 2px;
