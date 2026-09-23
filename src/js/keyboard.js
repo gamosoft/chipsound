@@ -43,7 +43,7 @@ export const SHORTCUTS = [
     { codes: [], keys: ['Click <i class="fa-solid fa-grip-lines-vertical" aria-hidden="true"></i>'], label: 'Toggle ALL channels' },
     { codes: [], keys: ['Drop files'],                           label: 'Play now, or add to playlist if already playing (Shift: replace)' },
     { codes: [], keys: ['Click playlist row'],                   label: 'Jump to that track (samples pane Playlist tab)' },
-    { codes: [], keys: ['Playlist trash'],                       label: 'Remove that track (next loads, stopped; last one unloads)' },
+    { codes: [], keys: ['Playlist trash'],                       label: 'Remove that track (keeps playing if something is next; last one unloads)' },
     { codes: [], keys: ['Headset next / prev'],                  label: 'Skip playlist tracks when a mix is playing' },
     { codes: [], keys: ['?'],                                      label: 'Show this help' },
     { codes: [], keys: ['Esc'],                                    label: 'Close this help' },

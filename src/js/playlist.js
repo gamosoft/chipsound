@@ -167,10 +167,11 @@ export function removeAt(i) {
         return true;
     }
     index = Math.min(i, items.length - 1);
+    const playNext = playerState.isPlaying && i < items.length;
     emit();
     busy = true;
     playerState.player?.stop();
-    void loadFromHereOrStop({ autoPlay: false, direction: 1 });
+    void loadFromHereOrStop({ autoPlay: playNext, direction: 1 });
     return true;
 }
 
