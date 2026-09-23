@@ -15,6 +15,7 @@ let index = -1;
 // metadata). onEnded must not also advance — the old song can still finish
 // while the next buffer is on its way.
 let busy = false;
+let haltGen = 0;
 
 export function playlistBusy() {
     return busy;
@@ -76,6 +77,7 @@ async function loadCurrent({ autoPlay }) {
 
 // Walk from `index` in `direction` until a load sticks, or we run out.
 async function loadFromHere({ autoPlay, direction = 1 }) {
+    haltGen += 1;
     busy = true;
     while (index >= 0 && index < items.length) {
         const result = await loadCurrent({ autoPlay });
@@ -148,17 +150,35 @@ export async function jumpTo(i) {
     return loadFromHereOrStop({ autoPlay, direction: 1 });
 }
 
-export function clearUpcoming() {
-    if (index < 0 || !items.length) {
-        items.length = 0;
-        index = -1;
-        emit();
-        return;
+function haltPlayback() {
+    const gen = ++haltGen;
+    busy = true;
+    playerState.player?.stop();
+    setPlaying(false);
+    setTimeout(() => {
+        if (gen === haltGen) busy = false;
+    }, 100);
+}
+
+export function removeAt(i) {
+    if (i < 0 || i >= items.length) return false;
+    const wasCurrent = i === index;
+    items.splice(i, 1);
+    if (wasCurrent) {
+        if (playerState.isPlaying || playerState.isPaused) haltPlayback();
+        index = items.length ? Math.min(i, items.length - 1) : -1;
+    } else if (i < index) {
+        index -= 1;
     }
-    const keep = items[index];
+    emit();
+    return true;
+}
+
+export function clearPlaylist() {
+    if (!items.length) return;
+    if (playerState.isPlaying || playerState.isPaused) haltPlayback();
     items.length = 0;
-    items.push(keep);
-    index = 0;
+    index = -1;
     emit();
 }
 

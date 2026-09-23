@@ -72,7 +72,7 @@ Other things worth mentioning:
 - Press `T` to cycle themes, `V` to cycle visualizations
 - Click a channel header to mute it; Ctrl-click to solo
 - Subsong picker for modules that ship multiple subsongs
-- The samples pane starts **automatic**: as wide as the longest sample name (floor 120px, cap 40% of the row). Drag the handle on its inner edge to set a width for this browser; double-click the handle (or Home with it focused) to go back to automatic. It is tabbed **SAMPLES** / **PLAYLIST** — click a playlist row to jump, Clear upcoming keeps the current track. `I` still hides the whole rail.
+- The samples pane starts **automatic**: as wide as the longest sample name (floor 120px, cap 40% of the row). Drag the handle on its inner edge to set a width for this browser; double-click the handle (or Home with it focused) to go back to automatic. It is tabbed **SAMPLES** / **PLAYLIST** — click a playlist row to jump, hover a row for the trash can to remove it, Clear playlist empties the mix (and stops if that track was playing). `I` still hides the whole rail.
 - Press `M` for the mixer (stereo, tempo, pitch, gain and other live playback parameters). Settings are remembered in this browser
 - Press `B` (or the Load button) for the library: a file from this device, the chipsound.com sample tracks, your recent URLs, a browsable local folder (serve your modules as `./tracks/`), and a URL / Mod Archive id box. `L` still opens the file picker directly (several files start a new playlist).
 - `?` opens the full keyboard shortcut list
@@ -133,7 +133,7 @@ https://chipsound.com/player.html?modarchive=212083
 https://chipsound.com/player.html?modarchive=212083,212701,48357
 ```
 
-A comma-separated `?modarchive=` plays those modules in order. The Load → URL box accepts the same list (`212083,212701`). Mixer **Loop** is still per-module (Play once, then the playlist advances; Forever never yields). Drop several files or a folder to build a playlist; drop while playing (or onto an existing mix) appends, `Shift+drop` replaces. `L` with several files starts a new mix. The samples pane **PLAYLIST** tab is the mix (click a row to jump; Clear upcoming keeps the current track). Headset next/prev skip tracks while a mix is playing.
+A comma-separated `?modarchive=` plays those modules in order. The Load → URL box accepts the same list (`212083,212701`). Mixer **Loop** is still per-module (Play once, then the playlist advances; Forever never yields). Drop several files or a folder to build a playlist; drop while playing (or onto an existing mix) appends, `Shift+drop` replaces. `L` with several files starts a new mix. The samples pane **PLAYLIST** tab is the mix (click a row to jump; trash removes one track; Clear playlist empties it and stops). Headset next/prev skip tracks while a mix is playing.
 
 > **Loading from The Mod Archive.** Modarchive's `downloads.php` endpoint sends the right CORS headers and works directly, but the `?` inside the inner URL must be percent-encoded (`%3F`), otherwise the outer query parser splits the URL in two:
 
@@ -163,6 +163,7 @@ A comma-separated `?modarchive=` plays those modules in order. The Load → URL 
 | Click grip icon in header | Toggle ALL channels |
 | Drop files | Play now, or add to playlist if already playing (`Shift`: replace) |
 | Click playlist row | Jump to that track (samples pane Playlist tab) |
+| Playlist trash | Remove that track (stops if it was playing) |
 | Headset next / prev | Skip playlist tracks when a mix is playing |
 
 ## Privacy & telemetry
