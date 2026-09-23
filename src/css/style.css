@@ -544,6 +544,7 @@ html.samples-hidden .pane-resizer { display: none; }
     overflow-y: auto;
     flex: 1 1 auto;
     min-height: 0;
+    overscroll-behavior: contain;
     scrollbar-width: thin;
     scrollbar-color: var(--tracker-row-highlight) var(--tracker-bg);
 }
@@ -583,6 +584,7 @@ html.samples-hidden .pane-resizer { display: none; }
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
 }
 .playlist-row {
     display: grid;
@@ -847,6 +849,7 @@ body.drag-over #dropZone { opacity: 1; }
 .modal-body {
     overflow: auto;
     min-height: 0;
+    overscroll-behavior: contain;
 }
 
 /* ========== Help / keyboard shortcuts ========== */
@@ -1281,6 +1284,7 @@ kbd {
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 /* Popup scrollbars (help body, library lists). Tokens follow the theme. */

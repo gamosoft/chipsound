@@ -47,9 +47,6 @@ function showPane(id) {
     }
 
     if (showPlaylist) {
-        renderPlaylistList(playlistEl, {
-            showClear: true,
-            onCleared: syncRail,
-        });
+        renderPlaylistList(playlistEl, { showClear: true });
     }
 }

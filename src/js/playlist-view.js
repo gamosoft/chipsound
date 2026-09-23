@@ -5,6 +5,7 @@ import { jumpTo, playlistSnapshot, clearPlaylist, removeAt } from './playlist.js
 
 export function renderPlaylistList(container, { onJump, showClear, onCleared } = {}) {
     const snap = playlistSnapshot();
+    const prevScroll = container.querySelector('.playlist-list')?.scrollTop ?? 0;
     container.replaceChildren();
 
     const ul = document.createElement('ul');
@@ -64,4 +65,15 @@ export function renderPlaylistList(container, { onJump, showClear, onCleared } =
         });
         container.appendChild(clear);
     }
+
+    ul.scrollTop = prevScroll;
+    keepRowInView(ul, ul.querySelector('.now-playing')?.closest('.playlist-row'));
+}
+
+function keepRowInView(scroller, row) {
+    if (!scroller || !row) return;
+    const s = scroller.getBoundingClientRect();
+    const r = row.getBoundingClientRect();
+    if (r.top < s.top) scroller.scrollTop -= s.top - r.top;
+    else if (r.bottom > s.bottom) scroller.scrollTop += r.bottom - s.bottom;
 }
