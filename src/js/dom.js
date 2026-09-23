@@ -28,7 +28,11 @@ export function el(tag, attrs = {}, content) {
 
 export function setText(selectorOrNode, text) {
     const node = typeof selectorOrNode === 'string' ? $(selectorOrNode) : selectorOrNode;
-    if (node) node.textContent = text;
+    if (!node) return;
+    node.textContent = text;
+    if (node.id === 'fileName' || node.id === 'songName') {
+        node.title = text || '';
+    }
 }
 
 export function show(node, visible = true) {

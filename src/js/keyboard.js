@@ -23,8 +23,10 @@ export const SHORTCUTS = [
     { codes: ['KeyS'],          keys: ['S'],             label: 'Stop',                    run: () => $('#stop').click() },
     { codes: ['KeyL'],          keys: ['L'],             label: 'Open file… (several files start a new playlist)', run: () => pickLocalFile() },
     { codes: ['KeyB'],          keys: ['B'],             label: 'Load (file, curated, local, URL)', run: () => toggleLibrary() },
-    { codes: ['ArrowLeft'],     keys: ['←'],             label: 'Previous order',          run: (e) => e.shiftKey ? skipTrack(-1) : navigateOrder(-1) },
-    { codes: ['ArrowRight'],    keys: ['→'],             label: 'Next order',              run: (e) => e.shiftKey ? skipTrack(+1) : navigateOrder(+1) },
+    { codes: ['ArrowLeft', 'ArrowRight'], keys: ['← / →'], label: 'Previous / next order', run: (e) => {
+        const dir = e.code === 'ArrowLeft' ? -1 : +1;
+        return e.shiftKey ? skipTrack(dir) : navigateOrder(dir);
+    } },
     { codes: [],                keys: ['Shift', '← / →'], joiner: ' + ',                   label: 'Previous / next track in playlist' },
     { codes: [],                keys: ['Previous / Next'],                                 label: 'Orders, or tracks when a playlist is playing' },
     { codes: ['KeyE'],          keys: ['E'],             label: 'Toggle effects (viz on/off)', run: () => $('#toggle-visualizations').click() },

@@ -204,6 +204,7 @@ function writeIfChanged(selector, text) {
     if (slot.lastText === text) return;
     slot.lastText = text;
     slot.node.textContent = text;
+    if (slot.node.id === 'songName') slot.node.title = text && text !== '-' ? text : '';
 }
 
 function invalidateStatusCache() {
