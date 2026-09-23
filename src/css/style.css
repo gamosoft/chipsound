@@ -1062,6 +1062,7 @@ kbd {
     border-bottom: 1px solid var(--popup-border);
     margin-bottom: 10px;
     flex: 0 0 auto;
+    overflow: hidden;
 }
 .library-tab {
     background: transparent;
@@ -1070,9 +1071,10 @@ kbd {
     color: var(--popup-muted);
     font-family: inherit;
     font-size: 12px;
-    padding: 6px 12px;
+    padding: 6px 10px;
     border-radius: 4px 4px 0 0;
     cursor: pointer;
+    flex: 0 0 auto;
 }
 .library-tab:hover { color: var(--popup-fg); }
 .library-tab.active {
@@ -1101,7 +1103,8 @@ kbd {
 .library-listing {
     flex: 1 1 auto;
     min-height: 0;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--popup-border) var(--popup-surface);
 }
@@ -1158,6 +1161,10 @@ kbd {
 .library-item-meta { color: var(--popup-faint); font-size: 10px; min-width: 3em; text-align: right; }
 .library-item.now-playing .library-item-title { color: var(--popup-accent); }
 .library-empty { color: var(--popup-muted); padding: 16px 8px; }
+.library-list:has(.library-empty),
+.library-listing:has(.library-empty) {
+    overflow: hidden;
+}
 
 .library-path, .library-url {
     display: flex;

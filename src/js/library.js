@@ -7,20 +7,24 @@
 //   api.load(url, { name })  fetch + play a module and close the modal
 //   api.list(items)          helper: render [{ title, subtitle, url, meta }]
 //
-// Built-in tabs: Curated (the chipsound.com picks), Recent (URL history),
-// Local (a same-origin directory listing, e.g. ./tracks/), and URL
-// (any http(s) URL or a Mod Archive id / link).
+// Built-in tabs: Playlist, Recent, Local, URL, and Curated.
 
 import { $, isTypingTarget } from './dom.js';
 import { prefs } from './prefs.js';
 import { playerState } from './state.js';
-import { loadFile, loadFromUrl } from './controls.js';
+import { playNow, jumpTo, queueSnapshot, onQueueChange, clearUpcoming } from './queue.js';
 import { toast } from './toast.js';
 import { createModal } from './modal.js';
 
 export function modArchiveDownloadUrl(id) {
     if (!id || !/^\d+$/.test(String(id))) return null;
     return `https://api.modarchive.org/downloads.php?moduleid=${id}`;
+}
+
+// `?modarchive=212083,212701` → numeric ids, junk tokens dropped.
+export function parseModArchiveIds(raw) {
+    if (!raw) return [];
+    return String(raw).split(',').map(s => s.trim()).filter(id => /^\d+$/.test(id));
 }
 
 // The six sample tracks from the chipsound.com landing page.
@@ -104,7 +108,7 @@ function playRecent(r) {
     const file = sessionFiles.get(r.url);
     if (file) {
         closeLibrary();
-        loadFile(file);
+        playNow({ file, name: file.name });
         return;
     }
     if (isLocalRecent(r.url)) {
@@ -119,7 +123,7 @@ function playRecent(r) {
 const api = {
     load(url, { name } = {}) {
         closeLibrary();
-        loadFromUrl(url, { autoPlay: true, name });
+        playNow({ url, name }, { autoPlay: true });
     },
     list(items, { empty = 'Nothing here yet.' } = {}) {
         const ul = document.createElement('ul');
@@ -136,7 +140,9 @@ const api = {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'library-item' + (it.kind === 'dir' ? ' library-dir' : '');
-            if (it.url && playerState.fileName && it.name === playerState.fileName) btn.classList.add('now-playing');
+            if (it.current || (it.url && playerState.fileName && it.name === playerState.fileName)) {
+                btn.classList.add('now-playing');
+            }
             btn.innerHTML = `<i class="fa-solid ${it.kind === 'dir' ? 'fa-folder' : 'fa-play'}" aria-hidden="true"></i>
                 <span class="library-item-title"></span><span class="library-item-sub"></span><span class="library-item-meta"></span>`;
             btn.querySelector('.library-item-title').textContent = it.title;
@@ -151,6 +157,38 @@ const api = {
 };
 
 // ---------- built-in tabs ----------
+
+const playlistTab = {
+    id: 'playlist', label: 'Playlist', icon: 'fa-layer-group',
+    render(body) {
+        const snap = queueSnapshot();
+        const p = document.createElement('p');
+        p.className = 'library-blurb';
+        p.textContent = snap.items.length
+            ? 'This mix lives in this tab only — refresh clears it. Click a row to jump.'
+            : 'Drop several files, pick more than one with Open file…, or open a ?modarchive=1,2,3 link.';
+        body.appendChild(p);
+        body.appendChild(api.list(snap.items.map((r, i) => ({
+            title: r.title,
+            subtitle: r.current ? 'Now playing' : (i === snap.index + 1 ? 'Up next' : ''),
+            meta: String(i + 1),
+            current: r.current,
+            onClick: () => {
+                closeLibrary();
+                if (!r.current) jumpTo(i);
+            },
+        })), { empty: 'Playlist is empty.' }));
+        if (snap.items.length > 1) {
+            const clear = document.createElement('button');
+            clear.type = 'button';
+            clear.className = 'library-action library-clear';
+            clear.title = 'Keep this track, drop the rest';
+            clear.innerHTML = '<span class="btn-label">Clear upcoming</span>';
+            clear.addEventListener('click', () => { clearUpcoming(); showTab('playlist'); });
+            body.appendChild(clear);
+        }
+    },
+};
 
 const curatedTab = {
     id: 'curated', label: 'Curated', icon: 'fa-star',
@@ -348,6 +386,7 @@ function renderTabBar() {
 }
 
 export async function showTab(id) {
+    if (id === 'queue') id = 'playlist';
     const tab = tabs.find(t => t.id === id) || tabs[0];
     if (!tab) return;
     activeTab = tab.id;
@@ -382,8 +421,11 @@ export function toggleLibrary() {
 export function isLibraryOpen() { return modal.isOpen(); }
 
 export function initLibrary() {
-    for (const t of [curatedTab, recentTab, localTab, urlTab]) if (!tabs.includes(t)) tabs.push(t);
+    for (const t of [playlistTab, recentTab, localTab, urlTab, curatedTab]) if (!tabs.includes(t)) tabs.push(t);
     $('#load')?.addEventListener('click', () => toggleLibrary());
+    onQueueChange(() => {
+        if (modal.isOpen() && activeTab === 'playlist') showTab('playlist');
+    });
     // Esc is handled by the modal primitive; ←/→ switch tabs. Global shortcuts
     // are off while a dialog is open, so B closes and L still opens a file.
     document.addEventListener('keydown', e => {

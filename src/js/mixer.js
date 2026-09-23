@@ -67,7 +67,7 @@ export const PARAMS = [
     {
         key: 'repeatCount', label: 'Loop', type: 'select', def: 0,
         options: [[0, 'Play once'], [-1, 'Forever'], [1, 'Twice'], [3, '4 times']],
-        hint: 'What happens when the module reaches its end.',
+        hint: 'This module only. Play once (default) then the playlist advances; Forever never yields.',
     },
 ];
 

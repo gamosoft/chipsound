@@ -3,6 +3,7 @@
 import { $, isTypingTarget } from './dom.js';
 import { cycleTheme } from './themes.js';
 import { cycleVisualization, pickLocalFile } from './controls.js';
+import { skipTrack } from './queue.js';
 import { toggleMixer } from './mixer.js';
 import { toggleLibrary } from './library.js';
 import { isAnyModalOpen } from './modal.js';
@@ -20,10 +21,12 @@ function isActivatableTarget(target) {
 export const SHORTCUTS = [
     { codes: ['Space', 'KeyP'], keys: ['Space', 'P'],    label: 'Play / Pause',            run: () => $('#play').click() },
     { codes: ['KeyS'],          keys: ['S'],             label: 'Stop',                    run: () => $('#stop').click() },
-    { codes: ['KeyL'],          keys: ['L'],             label: 'Open file…',              run: () => pickLocalFile() },
-    { codes: ['KeyB'],          keys: ['B'],             label: 'Load (file, curated, local, URL)', run: () => toggleLibrary() },
-    { codes: ['ArrowLeft'],     keys: ['←'],             label: 'Previous order',          run: () => $('#previous').click() },
-    { codes: ['ArrowRight'],    keys: ['→'],             label: 'Next order',              run: () => $('#next').click() },
+    { codes: ['KeyL'],          keys: ['L'],             label: 'Open file… (several files start a new playlist)', run: () => pickLocalFile() },
+    { codes: ['KeyB'],          keys: ['B'],             label: 'Load (playlist, file, curated, local, URL)', run: () => toggleLibrary() },
+    { codes: ['ArrowLeft'],     keys: ['←'],             label: 'Previous order',          run: (e) => e.shiftKey ? skipTrack(-1) : $('#previous').click() },
+    { codes: ['ArrowRight'],    keys: ['→'],             label: 'Next order',              run: (e) => e.shiftKey ? skipTrack(+1) : $('#next').click() },
+    { codes: [],                keys: ['Shift', '← / →'], joiner: ' + ',                   label: 'Previous / next track in playlist' },
+    { codes: [],                keys: ['Previous / Next'],                                 label: 'Orders, or tracks when a playlist is playing' },
     { codes: ['KeyE'],          keys: ['E'],             label: 'Toggle effects (viz on/off)', run: () => $('#toggle-visualizations').click() },
     { codes: ['KeyV'],          keys: ['V'],             label: 'Cycle visualization (Shift: reverse)', run: (e) => cycleVisualization(e?.shiftKey) },
     { codes: ['KeyI'],          keys: ['I'],             label: 'Toggle samples',          run: () => $('#toggle-samples').click() },
@@ -36,7 +39,9 @@ export const SHORTCUTS = [
     { codes: [], keys: ['Click header'],                           label: 'Toggle channel mute' },
     { codes: [], keys: ['Ctrl', 'Click header'], joiner: ' + ',    label: 'Solo channel (mute others)' },
     { codes: [], keys: ['Click <i class="fa-solid fa-grip-lines-vertical" aria-hidden="true"></i>'], label: 'Toggle ALL channels' },
-    { codes: [], keys: ['Drop file'],                              label: 'Load and auto-play module' },
+    { codes: [], keys: ['Drop files'],                           label: 'Play now, or add to playlist if already playing (Shift: replace)' },
+    { codes: [], keys: ['Click playlist row'],                   label: 'Jump to that track' },
+    { codes: [], keys: ['Headset next / prev'],                  label: 'Skip playlist tracks when a mix is playing' },
     { codes: [], keys: ['?'],                                      label: 'Show this help' },
     { codes: [], keys: ['Esc'],                                    label: 'Close this help' },
 ];

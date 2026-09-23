@@ -16,10 +16,10 @@ import {
     setControlsAvailable,
     getCurrentVisualizations,
     flushPendingLoad,
-    loadFromUrl,
     refreshSubsongSelector,
     onSongLoaded,
 } from './controls.js';
+import { playNow, playList, advance, queueBusy, releaseQueueBusy } from './queue.js';
 import {
     updateVisualizations,
     clearVisualizations,
@@ -35,9 +35,14 @@ import { placeholderMeta } from './placeholder.js';
 import { installDiagnostics } from './diagnostics.js';
 import { installMediaSession, setMediaSessionMetadata } from './media-session.js';
 import { initMixer, savedRenderConfig } from './mixer.js';
-import { initLibrary, modArchiveDownloadUrl } from './library.js';
+import { initLibrary, modArchiveDownloadUrl, parseModArchiveIds } from './library.js';
 
 let rafId = -1;
+// Worklet posts `end` every quantum once the cursor is past the song.
+// stop() clears that, but the messages already in flight would re-enter
+// onEnded and skip the queue twice. Gate until the next module's metadata
+// (or until we decide nothing else is playing).
+let ignoreEnded = false;
 
 function tick() {
     // try/finally so a throw can't tear down the RAF loop.
@@ -90,18 +95,30 @@ function bootstrapPlayer() {
         flushPendingLoad();
 
         // Direct-link sharing. Two URL forms supported:
-        //   ?load=<full URL>     any http(s) URL
-        //   ?modarchive=<n>      shortcut, expanded to a Modarchive download URL
+        //   ?load=<full URL>           any http(s) URL (single track)
+        //   ?modarchive=<n>[,n…]       shortcut; commas queue several ids
         // `load` wins if both are present. Autoplay is suppressed here because
         // the page just loaded with no user gesture: the AudioContext is
         // suspended, so play() would show the Pause icon without producing
         // sound. The first Space / click both unlocks audio and starts playback.
         const params = new URLSearchParams(location.search);
-        const loadUrl = params.get('load') || modArchiveDownloadUrl(params.get('modarchive'));
-        if (loadUrl) loadFromUrl(loadUrl, { autoPlay: false });
+        const loadUrl = params.get('load');
+        if (loadUrl) {
+            playNow({ url: loadUrl }, { autoPlay: false });
+        } else {
+            const ids = parseModArchiveIds(params.get('modarchive'));
+            if (ids.length) {
+                playList(ids.map(id => ({
+                    url: modArchiveDownloadUrl(id),
+                    name: `#${id}`,
+                })), { autoPlay: false });
+            }
+        }
     });
 
     player.onMetadata(meta => {
+        ignoreEnded = false;
+        releaseQueueBusy();
         playerState.meta = meta;
         // Clear stale pos — worklet keeps emitting for the OLD module
         // until it processes its 'load' command.
@@ -131,10 +148,12 @@ function bootstrapPlayer() {
 
     player.onEnded(() => {
         // stop() seeks to 0 and pauses — otherwise next Play would re-end
-        // immediately (worklet still flagged playing past the cursor).
+        // immediately (worklet still flagged playing past the cursor). Also
+        // stops the per-quantum `end` spam so we don't skip two queue items.
+        if (ignoreEnded || queueBusy()) return;
+        ignoreEnded = true;
         playerState.player.stop();
-        setPlaying(false);
-        stopTicker();
+        void finishOrAdvance();
     });
 
     player.onError(err => {
@@ -143,18 +162,38 @@ function bootstrapPlayer() {
         // content blockers / embedded webviews); others are playback.
         const reason = err?.type ?? 'unknown';
         const kind = String(reason).toLowerCase();
+        if (kind === 'workletload') {
+            toast('Could not load audio engine. Try reloading the page, or check that no extension is blocking it.',
+                  { variant: 'error', duration: 8000 });
+            setPlaying(false);
+            stopTicker();
+            ignoreEnded = false;
+            releaseQueueBusy();
+            return;
+        }
         if (kind === 'load') {
             const name = playerState.fileName || 'module';
             toast(`Could not load: ${name}`, { variant: 'error', duration: 5000 });
-        } else if (kind === 'workletload') {
-            toast('Could not load audio engine. Try reloading the page, or check that no extension is blocking it.',
-                  { variant: 'error', duration: 8000 });
         } else {
             toast(`Playback error: ${reason}`, { variant: 'error', duration: 5000 });
         }
+        ignoreEnded = true;
+        void finishOrAdvance();
+    });
+}
+
+let endChain = Promise.resolve();
+
+function finishOrAdvance() {
+    endChain = endChain.catch(() => {}).then(async () => {
+        const advanced = await advance({ autoPlay: true });
+        if (advanced) return;
         setPlaying(false);
         stopTicker();
+        ignoreEnded = false;
+        releaseQueueBusy();
     });
+    return endChain;
 }
 
 // Capture-phase resume() — arms BEFORE feature listeners and STAYS armed.
