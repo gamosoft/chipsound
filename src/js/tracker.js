@@ -58,6 +58,7 @@ export function renderTracker(meta) {
     if (!meta || !meta.song) return;
 
     const song = meta.song;
+    const placeholder = meta.isPlaceholder === true;
     playerState.resetChannelMutes();
 
     ensureChannelMuteRules();
@@ -65,7 +66,7 @@ export function renderTracker(meta) {
     resetGrids(song);
     clearCanvasCache();
     renderHeaders(song.channels);
-    renderSamples(song);
+    renderSamples(song, placeholder);
     refreshMutedChannelsAttribute();
 
     lastDrawnPattern = -1;
@@ -90,7 +91,15 @@ export function resetTracker(meta) {
 
     invalidateStatusCache();
 
-    if (!placeholder) {
+    if (placeholder) {
+        writeIfChanged('#songName', '');
+        writeIfChanged('#channels', '');
+        writeIfChanged('#samples', '');
+        writeIfChanged('#order', '');
+        writeIfChanged('#pattern', '');
+        writeIfChanged('#row', '');
+        writeIfChanged('#bpm', '');
+    } else {
         writeIfChanged('#songName', meta.title || '-');
         writeIfChanged('#channels', String(song.channels));
         writeIfChanged('#samples', String(song.samples.length));
@@ -634,8 +643,17 @@ function syncSampleListHeight() {
 
 // ---- samples -----------------------------------------------------------
 
-function renderSamples(song) {
+function renderSamples(song, placeholder) {
     const list = $('#sampleList');
+    if (placeholder) {
+        list.innerHTML = '';
+        list.style.display = 'block';
+        sampleItemsById = {};
+        channelSampleId = [];
+        highlightedSampleIds.clear();
+        pendingSampleIds.clear();
+        return;
+    }
 
     let html = '';
     for (let i = 0; i < song.samples.length; i++) {

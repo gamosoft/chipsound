@@ -7,7 +7,7 @@
 
 import { $ } from './dom.js';
 import { playerState } from './state.js';
-import { loadFile, loadFromUrl, setPlaying } from './controls.js';
+import { loadFile, loadFromUrl, setPlaying, unloadLiveModule } from './controls.js';
 
 const items = [];
 let index = -1;
@@ -110,6 +110,7 @@ export async function playList(newItems, { autoPlay = true } = {}) {
     if (!next.length) {
         index = -1;
         emit();
+        unloadLiveModule();
         return false;
     }
     items.push(...next);
@@ -150,36 +151,35 @@ export async function jumpTo(i) {
     return loadFromHereOrStop({ autoPlay, direction: 1 });
 }
 
-function haltPlayback() {
-    const gen = ++haltGen;
-    busy = true;
-    playerState.player?.stop();
-    setPlaying(false);
-    setTimeout(() => {
-        if (gen === haltGen) busy = false;
-    }, 100);
-}
-
 export function removeAt(i) {
     if (i < 0 || i >= items.length) return false;
     const wasCurrent = i === index;
     items.splice(i, 1);
-    if (wasCurrent) {
-        if (playerState.isPlaying || playerState.isPaused) haltPlayback();
-        index = items.length ? Math.min(i, items.length - 1) : -1;
-    } else if (i < index) {
-        index -= 1;
+    if (!wasCurrent) {
+        if (i < index) index -= 1;
+        emit();
+        return true;
     }
+    if (!items.length) {
+        index = -1;
+        emit();
+        unloadLiveModule();
+        return true;
+    }
+    index = Math.min(i, items.length - 1);
     emit();
+    busy = true;
+    playerState.player?.stop();
+    void loadFromHereOrStop({ autoPlay: false, direction: 1 });
     return true;
 }
 
 export function clearPlaylist() {
     if (!items.length) return;
-    if (playerState.isPlaying || playerState.isPaused) haltPlayback();
     items.length = 0;
     index = -1;
     emit();
+    unloadLiveModule();
 }
 
 export function playlistSnapshot() {

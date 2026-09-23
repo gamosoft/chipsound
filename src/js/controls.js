@@ -9,6 +9,7 @@ import { playList, addToPlaylist, playlistLength, skipTrack } from './playlist.j
 import {
     clearSampleHighlights,
     resetTracker,
+    renderTracker,
     toggleSamplesVisible,
     toggleVisualizationsVisible,
     refreshMutedChannelsAttribute,
@@ -17,7 +18,8 @@ import {
 } from './tracker.js';
 import { clearVisualizations, availableVisualizations, visualizationNames } from './viz-engine.js';
 import { openHelp } from './help.js';
-import { setMediaSessionPlaybackState } from './media-session.js';
+import { setMediaSessionPlaybackState, setMediaSessionMetadata } from './media-session.js';
+import { placeholderMeta } from './placeholder.js';
 
 const ACCEPTED_EXTENSIONS = ['.mod', '.s3m', '.xm', '.it'];
 
@@ -140,6 +142,43 @@ export function setControlsAvailable(enabled) {
     syncVizControlEnabled();
 }
 
+function hasLiveModule() {
+    return Boolean(playerState.meta?.song) && playerState.meta.isPlaceholder !== true;
+}
+
+// Worklet load/metadata is async. Unload bumps loadEpoch without posting, so
+// a late onMetadata / onEnded from the discarded module can be ignored.
+let loadEpoch = 0;
+let postedEpoch = 0;
+
+function notePostedLoad() {
+    postedEpoch = ++loadEpoch;
+}
+
+export function isStaleModuleEvent() {
+    return loadEpoch !== postedEpoch;
+}
+
+// Playlist is empty: back to the boot player (placeholder grid, no module).
+export function unloadLiveModule() {
+    loadEpoch++;
+    abortInFlightUrlLoad();
+    pendingFile = null;
+    autoPlayOnNextLoad = false;
+    playerState.player?.stop();
+    playerState.fileName = '';
+    setText('#fileName', '');
+    playerState.meta = placeholderMeta();
+    playerState.modpos = {};
+    playerState.pendingJumpOrder = null;
+    setPlaying(false);
+    setControlsAvailable(false);
+    renderTracker(playerState.meta);
+    refreshSubsongSelector(null);
+    setMediaSessionMetadata({ title: '', fileName: '' });
+    hideToast();
+}
+
 export function initControls({ onTick, onIdle, onPause, onVizChange: vizChangeCb }) {
     onPlayStart = onTick;
     onPlayStop = onIdle;
@@ -189,6 +228,7 @@ export function loadFile(file, { autoPlay = true } = {}) {
     autoPlayOnNextLoad = autoPlay;
 
     if (isWorkletReady()) {
+        notePostedLoad();
         playerState.player.load(file);
     } else {
         pendingFile = file;
@@ -364,6 +404,7 @@ export async function loadFromUrl(url, { autoPlay = true, name = null } = {}) {
         setText('#fileName', filename);
         autoPlayOnNextLoad = autoPlay;
         hideToast();
+        notePostedLoad();
         playerState.player.loadBuffer(buffer);
         return 'ok';
     } finally {
@@ -376,6 +417,7 @@ export function flushPendingLoad() {
     if (!pendingFile || !isWorkletReady()) return;
     const file = pendingFile;
     pendingFile = null;
+    notePostedLoad();
     playerState.player.load(file);
 }
 
@@ -538,7 +580,7 @@ async function walkEntry(entry, out, depth) {
 function wireButtons() {
     // Three-way: stopped → play; playing → pause; paused → unpause.
     $('#play').addEventListener('click', () => {
-        if (!playerState.meta?.song) {
+        if (!hasLiveModule()) {
             toast('Load a module first', { variant: 'warn' });
             return;
         }
@@ -563,7 +605,7 @@ function wireButtons() {
     });
 
     $('#stop').addEventListener('click', () => {
-        if (!playerState.meta?.song) return;
+        if (!hasLiveModule()) return;
         if (!playerState.isPlaying && !playerState.isPaused) return;
         playerState.player.stop();
         setPlaybackState(STOPPED);
@@ -600,7 +642,7 @@ function skipOrOrder(delta) {
 
 export function navigateOrder(delta) {
     const song = playerState.meta?.song;
-    if (!song || !playerState.player) return;
+    if (!song || !playerState.player || playerState.meta.isPlaceholder) return;
 
     const target = getCurrentOrder() + delta;
     if (target < 0 || target >= song.totalOrders) return;

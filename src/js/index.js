@@ -18,6 +18,7 @@ import {
     flushPendingLoad,
     refreshSubsongSelector,
     onSongLoaded,
+    isStaleModuleEvent,
 } from './controls.js';
 import { playNow, playList, advance, playlistBusy, releasePlaylistBusy } from './playlist.js';
 import {
@@ -118,6 +119,7 @@ function bootstrapPlayer() {
     });
 
     player.onMetadata(meta => {
+        if (isStaleModuleEvent()) return;
         ignoreEnded = false;
         releasePlaylistBusy();
         playerState.meta = meta;
@@ -151,13 +153,14 @@ function bootstrapPlayer() {
         // stop() seeks to 0 and pauses — otherwise next Play would re-end
         // immediately (worklet still flagged playing past the cursor). Also
         // stops the per-quantum `end` spam so we don't skip two playlist items.
-        if (ignoreEnded || playlistBusy()) return;
+        if (ignoreEnded || playlistBusy() || isStaleModuleEvent()) return;
         ignoreEnded = true;
         playerState.player.stop();
         void finishOrAdvance();
     });
 
     player.onError(err => {
+        if (isStaleModuleEvent()) return;
         // chiptune3.load() reports 'Load' on fetch failure; 'WorkletLoad' is
         // emitted when audioWorklet.addModule() fails (restrictive browsers /
         // content blockers / embedded webviews); others are playback.
