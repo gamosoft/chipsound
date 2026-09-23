@@ -1,6 +1,6 @@
 // Tracker UI: channel headers, pattern grid (double-buffered), sample list.
 
-import { $, $$, el, show } from './dom.js';
+import { $, el } from './dom.js';
 import { hb, padNumber, renderNote } from './format.js';
 import { playerState } from './state.js';
 import {
@@ -723,7 +723,9 @@ function updateUsedSamples(song, pos, volumes) {
 // ---- panel toggles -----------------------------------------------------
 
 export function toggleVisualizationsVisible(visible) {
-    $$('.canvas-parent').forEach(node => show(node, visible));
+    // Class on <html> so CSS can latch the Effects button and hide canvases
+    // (including ones created after a later song load).
+    document.documentElement.classList.toggle('viz-hidden', !visible);
     // Defer the reflow to rAF so the click handler returns immediately.
     requestAnimationFrame(relayoutTracker);
 }

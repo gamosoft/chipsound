@@ -191,6 +191,22 @@ body { overflow: hidden; }
     box-shadow: 2px 2px 0 #000;
 }
 
+/* Latch fill when the panel is hidden (overlay of accent×tracker-bg so
+   it still reads when those two are the same color — Newspaper).
+   Load / Help fill while their dialog is open. */
+:root.samples-hidden #toggle-samples,
+:root.viz-hidden #toggle-visualizations,
+:root.viz-hidden .viz-control,
+:root:has(#mixerPanel[hidden]) #toggle-mixer,
+:root:has(#libraryOverlay.visible) #load,
+:root:has(#helpOverlay.visible) #show-help {
+    background-image: linear-gradient(
+        color-mix(in srgb, color-mix(in srgb, var(--accent) 55%, var(--tracker-bg)) 38%, transparent),
+        color-mix(in srgb, color-mix(in srgb, var(--accent) 55%, var(--tracker-bg)) 38%, transparent)
+    );
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--tracker-bg));
+}
+
 /* Dim chip wrappers whose <select> child is disabled. */
 .subsong-control:has(.retro-select:disabled),
 .viz-control:has(.retro-select:disabled) {
@@ -280,6 +296,7 @@ body { overflow: hidden; }
 /* Stamped on <html> by preboot; kept in sync by toggleSamplesVisible. */
 html.samples-hidden .tracker-container { grid-template-columns: 1fr; }
 html.samples-hidden .sample-section    { display: none; }
+html.viz-hidden .canvas-parent         { display: none; }
 
 /* Single scroll container — both axes. Sticky header rides the horizontal scroll. */
 .tracker-main {

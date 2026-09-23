@@ -50,7 +50,7 @@
     <link rel="stylesheet" href="./css/fontawesome/fontawesome.min.css">
     <link rel="stylesheet" href="./css/fontawesome/solid.min.css">
 
-    <!-- Synchronous preboot: apply saved theme + samples-hidden class before first paint. -->
+    <!-- Synchronous preboot: apply saved theme + samples-hidden / viz-hidden before first paint. -->
     <script>
         (function () {
             var root = document.documentElement;
@@ -73,6 +73,10 @@
                     if (samplesRaw !== null) {
                         var parsed = JSON.parse(samplesRaw);
                         if (parsed === false) samplesHidden = true;
+                    }
+                    var vizRaw = localStorage.getItem('modplayer.showVisualizations');
+                    if (vizRaw !== null && JSON.parse(vizRaw) === false) {
+                        root.classList.add('viz-hidden');
                     }
                 } catch (e) { /* private mode etc. — keep defaults */ }
 
@@ -152,7 +156,7 @@
                 <select id="vizPicker" class="retro-select" aria-label="Visualization (V to cycle)" title="Visualization (V to cycle)" disabled></select>
             </label>
             <button id="toggle-samples" class="retro-button" type="button" data-track="samples_clicked" aria-label="Toggle samples (I)" title="Toggle samples (I)" disabled>
-                <i class="fa-solid fa-record-vinyl" aria-hidden="true"></i> <span class="btn-label">Samples</span>
+                <i class="fa-solid fa-wave-square" aria-hidden="true"></i> <span class="btn-label">Samples</span>
             </button>
             <button id="toggle-mixer" class="retro-button" type="button" data-track="mixer_clicked" aria-label="Toggle mixer (M)" title="Playback parameters (M)">
                 <i class="fa-solid fa-sliders" aria-hidden="true"></i> <span class="btn-label">Mixer</span>
