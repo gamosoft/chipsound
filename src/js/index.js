@@ -19,7 +19,7 @@ import {
     refreshSubsongSelector,
     onSongLoaded,
 } from './controls.js';
-import { playNow, playList, advance, queueBusy, releaseQueueBusy } from './queue.js';
+import { playNow, playList, advance, playlistBusy, releasePlaylistBusy } from './playlist.js';
 import {
     updateVisualizations,
     clearVisualizations,
@@ -40,7 +40,7 @@ import { initLibrary, modArchiveDownloadUrl, parseModArchiveIds } from './librar
 let rafId = -1;
 // Worklet posts `end` every quantum once the cursor is past the song.
 // stop() clears that, but the messages already in flight would re-enter
-// onEnded and skip the queue twice. Gate until the next module's metadata
+// onEnded and skip the playlist twice. Gate until the next module's metadata
 // (or until we decide nothing else is playing).
 let ignoreEnded = false;
 
@@ -96,7 +96,7 @@ function bootstrapPlayer() {
 
         // Direct-link sharing. Two URL forms supported:
         //   ?load=<full URL>           any http(s) URL (single track)
-        //   ?modarchive=<n>[,n…]       shortcut; commas queue several ids
+        //   ?modarchive=<n>[,n…]       shortcut; commas make a playlist of ids
         // `load` wins if both are present. Autoplay is suppressed here because
         // the page just loaded with no user gesture: the AudioContext is
         // suspended, so play() would show the Pause icon without producing
@@ -118,7 +118,7 @@ function bootstrapPlayer() {
 
     player.onMetadata(meta => {
         ignoreEnded = false;
-        releaseQueueBusy();
+        releasePlaylistBusy();
         playerState.meta = meta;
         // Clear stale pos — worklet keeps emitting for the OLD module
         // until it processes its 'load' command.
@@ -149,8 +149,8 @@ function bootstrapPlayer() {
     player.onEnded(() => {
         // stop() seeks to 0 and pauses — otherwise next Play would re-end
         // immediately (worklet still flagged playing past the cursor). Also
-        // stops the per-quantum `end` spam so we don't skip two queue items.
-        if (ignoreEnded || queueBusy()) return;
+        // stops the per-quantum `end` spam so we don't skip two playlist items.
+        if (ignoreEnded || playlistBusy()) return;
         ignoreEnded = true;
         playerState.player.stop();
         void finishOrAdvance();
@@ -168,7 +168,7 @@ function bootstrapPlayer() {
             setPlaying(false);
             stopTicker();
             ignoreEnded = false;
-            releaseQueueBusy();
+            releasePlaylistBusy();
             return;
         }
         if (kind === 'load' || kind === 'ptr') {
@@ -182,7 +182,7 @@ function bootstrapPlayer() {
         setPlaying(false);
         stopTicker();
         ignoreEnded = false;
-        releaseQueueBusy();
+        releasePlaylistBusy();
     });
 }
 
@@ -192,11 +192,11 @@ function finishOrAdvance() {
     endChain = endChain.catch(() => {}).then(async () => {
         const advanced = await advance({ autoPlay: true });
         if (advanced) return;
-        if (queueBusy()) return;
+        if (playlistBusy()) return;
         setPlaying(false);
         stopTicker();
         ignoreEnded = false;
-        releaseQueueBusy();
+        releasePlaylistBusy();
     });
     return endChain;
 }

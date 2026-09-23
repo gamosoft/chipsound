@@ -3,7 +3,7 @@
 import { $, isTypingTarget } from './dom.js';
 import { cycleTheme } from './themes.js';
 import { cycleVisualization, pickLocalFile, navigateOrder } from './controls.js';
-import { skipTrack } from './queue.js';
+import { skipTrack } from './playlist.js';
 import { toggleMixer } from './mixer.js';
 import { toggleLibrary } from './library.js';
 import { isAnyModalOpen } from './modal.js';

@@ -5,7 +5,7 @@ import { playerState } from './state.js';
 import { prefs } from './prefs.js';
 import { toast, hideToast } from './toast.js';
 import { recordRecent, closeLibrary } from './library.js';
-import { playList, enqueue, queueLength, skipTrack } from './queue.js';
+import { playList, addToPlaylist, playlistLength, skipTrack } from './playlist.js';
 import {
     clearSampleHighlights,
     resetTracker,
@@ -268,7 +268,7 @@ async function fetchWithRetry(url, signal) {
     }
 }
 
-// Returns 'ok' | 'fail' | 'aborted' so the queue can skip a dead URL
+// Returns 'ok' | 'fail' | 'aborted' so the playlist can skip a dead URL
 // without treating a superseded load as a hard error.
 export async function loadFromUrl(url, { autoPlay = true, name = null } = {}) {
     if (!url) return 'fail';
@@ -441,12 +441,12 @@ function wireDragAndDrop() {
     });
 }
 
-const QUEUE_CAP = 100;
+const PLAYLIST_CAP = 100;
 const MAX_FOLDER_DEPTH = 3;
 
 function dropAddsToPlaylist() {
     if (playerState.isPlaying || playerState.isPaused) return true;
-    return queueLength() > 0;
+    return playlistLength() > 0;
 }
 
 function ingestFiles(files, { replace }) {
@@ -454,7 +454,7 @@ function ingestFiles(files, { replace }) {
     let rejected = 0;
     let capped = false;
     for (const file of files) {
-        if (accepted.length >= QUEUE_CAP) { capped = true; break; }
+        if (accepted.length >= PLAYLIST_CAP) { capped = true; break; }
         if (isAcceptedFile(file.name)) accepted.push(file);
         else rejected++;
     }
@@ -467,7 +467,7 @@ function ingestFiles(files, { replace }) {
     const items = accepted.map(file => ({ file, name: file.name }));
     const notes = [];
     if (rejected) notes.push(`skipped ${rejected}`);
-    if (capped) notes.push(`capped at ${QUEUE_CAP}`);
+    if (capped) notes.push(`capped at ${PLAYLIST_CAP}`);
     const extra = notes.length ? `, ${notes.join(', ')}` : '';
 
     if (replace) {
@@ -476,8 +476,8 @@ function ingestFiles(files, { replace }) {
         return;
     }
 
-    enqueue(items);
-    const n = queueLength();
+    addToPlaylist(items);
+    const n = playlistLength();
     const added = accepted.length === 1 ? accepted[0].name : `${accepted.length} tracks`;
     toast(`Added to playlist: ${added}${extra} · ${n} total`, { variant: 'info' });
 }
@@ -521,7 +521,7 @@ function readAllEntries(dirEntry) {
 }
 
 async function walkEntry(entry, out, depth) {
-    if (!entry || out.length >= QUEUE_CAP) return;
+    if (!entry || out.length >= PLAYLIST_CAP) return;
     if (entry.isFile) {
         const file = await entryFile(entry);
         if (file) out.push(file);
@@ -530,7 +530,7 @@ async function walkEntry(entry, out, depth) {
     if (!entry.isDirectory || depth >= MAX_FOLDER_DEPTH) return;
     const children = await readAllEntries(entry);
     for (const child of children) {
-        if (out.length >= QUEUE_CAP) return;
+        if (out.length >= PLAYLIST_CAP) return;
         await walkEntry(child, out, depth + 1);
     }
 }
@@ -591,7 +591,7 @@ function wireButtons() {
 function skipOrOrder(delta) {
     // A mix is armed: the buttons mean tracks, like a deck. ←/→ stay order-level
     // so pattern study still works; Shift+←/→ is the keyboard twin of these.
-    if (queueLength() > 1) {
+    if (playlistLength() > 1) {
         skipTrack(delta);
         return;
     }

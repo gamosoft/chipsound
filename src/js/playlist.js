@@ -1,4 +1,4 @@
-// In-memory play queue. Mixer Loop (repeatCount) stays per-module —
+// In-memory playlist. Mixer Loop (repeatCount) stays per-module —
 // libopenmpt consumes it, and onEnded only fires after that finishes.
 // This module answers "what plays after that."
 //
@@ -11,30 +11,26 @@ import { loadFile, loadFromUrl, setPlaying } from './controls.js';
 
 const items = [];
 let index = -1;
-// True while a queue load is in flight (fetch / FileReader / waiting on
+// True while a playlist load is in flight (fetch / FileReader / waiting on
 // metadata). onEnded must not also advance — the old song can still finish
 // while the next buffer is on its way.
 let busy = false;
 
-export function queueBusy() {
+export function playlistBusy() {
     return busy;
 }
 
-export function releaseQueueBusy() {
+export function releasePlaylistBusy() {
     busy = false;
 }
 
-export function queueLength() {
+export function playlistLength() {
     return items.length;
-}
-
-export function queueIndex() {
-    return index;
 }
 
 const listeners = [];
 
-export function onQueueChange(fn) {
+export function onPlaylistChange(fn) {
     listeners.push(fn);
 }
 
@@ -43,16 +39,16 @@ function emit() {
     for (const fn of listeners) fn();
 }
 
-function syncSkipButtons(queued) {
+function syncSkipButtons(hasMix) {
     const prev = $('#previous');
     const next = $('#next');
     if (prev) {
-        prev.title = queued ? 'Previous track (Shift+←)' : 'Previous order (←)';
-        prev.setAttribute('aria-label', queued ? 'Previous track (Shift+Left)' : 'Previous order (Left)');
+        prev.title = hasMix ? 'Previous track (Shift+←)' : 'Previous order (←)';
+        prev.setAttribute('aria-label', hasMix ? 'Previous track (Shift+Left)' : 'Previous order (Left)');
     }
     if (next) {
-        next.title = queued ? 'Next track (Shift+→)' : 'Next order (→)';
-        next.setAttribute('aria-label', queued ? 'Next track (Shift+Right)' : 'Next order (Right)');
+        next.title = hasMix ? 'Next track (Shift+→)' : 'Next order (→)';
+        next.setAttribute('aria-label', hasMix ? 'Next track (Shift+Right)' : 'Next order (Right)');
     }
 }
 
@@ -124,7 +120,7 @@ export function playNow(item, opts) {
     return playList(item ? [item] : [], opts);
 }
 
-export function enqueue(newItems) {
+export function addToPlaylist(newItems) {
     const next = (newItems || []).filter(Boolean);
     if (!next.length) return 0;
     const startedEmpty = index < 0;
@@ -166,7 +162,7 @@ export function clearUpcoming() {
     emit();
 }
 
-export function queueSnapshot() {
+export function playlistSnapshot() {
     return {
         index,
         items: items.map((item, i) => ({

@@ -12,7 +12,7 @@
 import { $, isTypingTarget } from './dom.js';
 import { prefs } from './prefs.js';
 import { playerState } from './state.js';
-import { playNow, playList, jumpTo, queueSnapshot, onQueueChange, clearUpcoming } from './queue.js';
+import { playNow, playList, jumpTo, playlistSnapshot, onPlaylistChange, clearUpcoming } from './playlist.js';
 import { toast } from './toast.js';
 import { createModal } from './modal.js';
 
@@ -161,7 +161,7 @@ const api = {
 const playlistTab = {
     id: 'playlist', label: 'Playlist', icon: 'fa-layer-group',
     render(body) {
-        const snap = queueSnapshot();
+        const snap = playlistSnapshot();
         const p = document.createElement('p');
         p.className = 'library-blurb';
         p.textContent = snap.items.length
@@ -399,7 +399,6 @@ function renderTabBar() {
 }
 
 export async function showTab(id) {
-    if (id === 'queue') id = 'playlist';
     const tab = tabs.find(t => t.id === id) || tabs[0];
     if (!tab) return;
     activeTab = tab.id;
@@ -436,7 +435,7 @@ export function isLibraryOpen() { return modal.isOpen(); }
 export function initLibrary() {
     for (const t of [playlistTab, recentTab, localTab, urlTab, curatedTab]) if (!tabs.includes(t)) tabs.push(t);
     $('#load')?.addEventListener('click', () => toggleLibrary());
-    onQueueChange(() => {
+    onPlaylistChange(() => {
         if (modal.isOpen() && activeTab === 'playlist') showTab('playlist');
     });
     // Esc is handled by the modal primitive; ←/→ switch tabs. Global shortcuts
