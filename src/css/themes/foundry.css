@@ -165,7 +165,10 @@
     background: #ff6a00;
     color: #1a1a1a;
 }
-:root.theme-foundry #play.playing { background: #ff3a1a; color: #1a1a1a; }
+:root.theme-foundry {
+    --play-on-bg: #ff3a1a;
+    --play-on-fg: #1a1a1a;
+}
 
 :root.theme-foundry .retro-select,
 :root.theme-foundry .subsong-control,

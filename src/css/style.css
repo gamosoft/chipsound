@@ -5,6 +5,11 @@
 :root {
     --accent: #4ade80;
 
+    /* Play-while-playing + latched toggles (Samples, Effects, Mixer, …). */
+    --play-on-bg:     var(--accent);
+    --play-on-fg:     var(--tracker-bg);
+    --play-on-border: var(--accent);
+
     --viz-primary:   #00a1ce;
     --viz-secondary: #00ffff;
     --viz-glow:      rgba(136, 136, 255, 0.5);
@@ -191,20 +196,22 @@ body { overflow: hidden; }
     box-shadow: 2px 2px 0 #000;
 }
 
-/* Latch fill when the panel is hidden (overlay of accent×tracker-bg so
-   it still reads when those two are the same color — Newspaper).
-   Load / Help fill while their dialog is open. */
-:root.samples-hidden #toggle-samples,
-:root.viz-hidden #toggle-visualizations,
-:root.viz-hidden .viz-control,
-:root:has(#mixerPanel[hidden]) #toggle-mixer,
+/* Same paint as Play while a song is playing — latched from the panel, not the click. */
+#play.playing,
+:root:not(.samples-hidden) #toggle-samples,
+:root:not(.viz-hidden) #toggle-visualizations,
+:root:not(.viz-hidden) #vizControl,
+:root:has(#mixerPanel:not([hidden])) #toggle-mixer,
 :root:has(#libraryOverlay.visible) #load,
 :root:has(#helpOverlay.visible) #show-help {
-    background-image: linear-gradient(
-        color-mix(in srgb, color-mix(in srgb, var(--accent) 55%, var(--tracker-bg)) 38%, transparent),
-        color-mix(in srgb, color-mix(in srgb, var(--accent) 55%, var(--tracker-bg)) 38%, transparent)
-    );
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--tracker-bg));
+    background: var(--play-on-bg);
+    color: var(--play-on-fg);
+    border-color: var(--play-on-border);
+    text-shadow: none;
+}
+:root:not(.viz-hidden) #vizControl .retro-select {
+    color: inherit;
+    background: transparent;
 }
 
 /* Dim chip wrappers whose <select> child is disabled. */

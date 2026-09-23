@@ -4,6 +4,9 @@
     --theme-name: "Newspaper";
 
     --accent: #1a1a1a;
+    --play-on-bg:     #b91c1c;
+    --play-on-fg:     #f4ecd8;
+    --play-on-border: #b91c1c;
 
     --viz-primary:   #1a1a1a;
     --viz-secondary: #555555;

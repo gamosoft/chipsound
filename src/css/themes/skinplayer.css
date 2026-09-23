@@ -147,10 +147,10 @@
     opacity: 0.45;
     background: linear-gradient(180deg, #3a4658 0%, #1f2838 100%);
 }
-:root.theme-skinplayer #play.playing {
-    background: linear-gradient(180deg, #00d967 0%, #006633 100%);
-    color: #021a0c;
-    border-color: #003315;
+:root.theme-skinplayer {
+    --play-on-bg:     linear-gradient(180deg, #00d967 0%, #006633 100%);
+    --play-on-fg:     #021a0c;
+    --play-on-border: #003315;
 }
 
 :root.theme-skinplayer .retro-select,
