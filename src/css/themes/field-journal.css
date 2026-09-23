@@ -150,11 +150,18 @@
 
 :root.theme-field-journal .tracker-container,
 :root.theme-field-journal .sample-list,
+:root.theme-field-journal .playlist-rail,
 :root.theme-field-journal .canvas-parent {
     background: rgba(245, 241, 230, 0.6);
     border: 1px dashed var(--ink);
     border-radius: 4px;
     box-shadow: none;
+}
+:root.theme-field-journal .rail-tab {
+    font-family: "Georgia", serif;
+    letter-spacing: 2px;
+    color: var(--ink);
+    border-bottom: 1px dashed var(--ink);
 }
 :root.theme-field-journal .visualization-canvas {
     background: var(--paper);

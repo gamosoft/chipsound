@@ -178,7 +178,8 @@
 
 /* Samples = cartridge label panel. */
 :root.theme-pocket .sample-section { padding-left: 0; }
-:root.theme-pocket .sample-list {
+:root.theme-pocket .sample-list,
+:root.theme-pocket .playlist-rail {
     background: #efe4d2;
     border: 2px solid #1d2a10;
     border-radius: 3px;
@@ -187,11 +188,9 @@
         inset 0 2px 0 rgba(255, 255, 255, 0.3),
         2px 2px 0 #4a3a32;
 }
-:root.theme-pocket .sample-list::before {
-    content: "▮ CART";
-    display: block;
+:root.theme-pocket .rail-tab {
     padding: 4px 6px;
-    margin: -4px -6px 6px;
+    margin: 0;
     background: #d4583a;
     color: #efe4d2;
     font-family: "Verdana", sans-serif;
@@ -200,6 +199,10 @@
     letter-spacing: 3px;
     text-transform: uppercase;
     text-align: center;
+    border-bottom: none;
+}
+:root.theme-pocket .rail-tab[aria-selected="true"] {
+    outline: 1px solid #1d2a10;
 }
 :root.theme-pocket .sample-item {
     background: transparent;

@@ -256,15 +256,14 @@
 
 /* Samples = classified ads gutter. */
 :root.theme-newspaper .sample-section { padding-left: 0; border-left: 1px solid #1a1a1a; }
-:root.theme-newspaper .sample-list {
+:root.theme-newspaper .sample-list,
+:root.theme-newspaper .playlist-rail {
     background: #e8dfc4;
     border: none;
     border-radius: 0;
     padding: 6px 8px;
 }
-:root.theme-newspaper .sample-list::before {
-    content: 'CLASSIFIEDS';
-    display: block;
+:root.theme-newspaper .rail-tab {
     padding-bottom: 4px;
     margin-bottom: 4px;
     border-bottom: 3px double #1a1a1a;

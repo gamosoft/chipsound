@@ -231,16 +231,15 @@
 
 /* Sample list = playlist window. */
 :root.theme-skinplayer .sample-section { padding-left: 0; }
-:root.theme-skinplayer .sample-list {
+:root.theme-skinplayer .sample-list,
+:root.theme-skinplayer .playlist-rail {
     background: #0d121b;
     border: 1px solid #050a14;
     border-radius: 3px;
     padding: 6px;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7);
 }
-:root.theme-skinplayer .sample-list::before {
-    content: "▸ PLAYLIST";
-    display: block;
+:root.theme-skinplayer .rail-tab {
     padding: 2px 4px 4px;
     margin-bottom: 4px;
     border-bottom: 1px solid #1a2536;
@@ -251,6 +250,7 @@
     color: #00ff7f;
     text-shadow: 0 0 4px rgba(0, 255, 127, 0.5);
 }
+:root.theme-skinplayer .rail-tab::before { content: "▸ "; }
 :root.theme-skinplayer .sample-item {
     background: transparent;
     color: #8fb5c8;

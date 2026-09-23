@@ -7,12 +7,12 @@
 //   api.load(url, { name })  fetch + play a module and close the modal
 //   api.list(items)          helper: render [{ title, subtitle, url, meta }]
 //
-// Built-in tabs: Playlist, Recent, Local, URL, and Curated.
+// Built-in tabs: Recent, Local, URL, and Curated.
 
 import { $, isTypingTarget } from './dom.js';
 import { prefs } from './prefs.js';
 import { playerState } from './state.js';
-import { playNow, playList, jumpTo, playlistSnapshot, onPlaylistChange, clearUpcoming } from './playlist.js';
+import { playNow, playList } from './playlist.js';
 import { toast } from './toast.js';
 import { createModal } from './modal.js';
 
@@ -157,38 +157,6 @@ const api = {
 };
 
 // ---------- built-in tabs ----------
-
-const playlistTab = {
-    id: 'playlist', label: 'Playlist', icon: 'fa-layer-group',
-    render(body) {
-        const snap = playlistSnapshot();
-        const p = document.createElement('p');
-        p.className = 'library-blurb';
-        p.textContent = snap.items.length
-            ? 'This mix lives in this tab only — refresh clears it. Click a row to jump.'
-            : 'Drop several files, pick more than one with Open file…, paste comma-separated ids in URL, or open a ?modarchive=1,2,3 link.';
-        body.appendChild(p);
-        body.appendChild(api.list(snap.items.map((r, i) => ({
-            title: r.title,
-            subtitle: r.current ? 'Now playing' : (i === snap.index + 1 ? 'Up next' : ''),
-            meta: String(i + 1),
-            current: r.current,
-            onClick: () => {
-                closeLibrary();
-                if (!r.current) jumpTo(i);
-            },
-        })), { empty: 'Playlist is empty.' }));
-        if (snap.items.length > 1) {
-            const clear = document.createElement('button');
-            clear.type = 'button';
-            clear.className = 'library-action library-clear';
-            clear.title = 'Keep this track, drop the rest';
-            clear.innerHTML = '<span class="btn-label">Clear upcoming</span>';
-            clear.addEventListener('click', () => { clearUpcoming(); showTab('playlist'); });
-            body.appendChild(clear);
-        }
-    },
-};
 
 const curatedTab = {
     id: 'curated', label: 'Curated', icon: 'fa-star',
@@ -421,7 +389,9 @@ export async function showTab(id) {
 
 export function openLibrary(tabId) {
     modal.open();
-    showTab(tabId || prefs.libraryTab || 'curated');
+    let id = tabId || prefs.libraryTab || 'curated';
+    if (id === 'playlist' || id === 'queue') id = 'curated';
+    showTab(id);
 }
 
 export function closeLibrary() { modal.close(); }
@@ -433,11 +403,8 @@ export function toggleLibrary() {
 export function isLibraryOpen() { return modal.isOpen(); }
 
 export function initLibrary() {
-    for (const t of [playlistTab, recentTab, localTab, urlTab, curatedTab]) if (!tabs.includes(t)) tabs.push(t);
+    for (const t of [recentTab, localTab, urlTab, curatedTab]) if (!tabs.includes(t)) tabs.push(t);
     $('#load')?.addEventListener('click', () => toggleLibrary());
-    onPlaylistChange(() => {
-        if (modal.isOpen() && activeTab === 'playlist') showTab('playlist');
-    });
     // Esc is handled by the modal primitive; ←/→ switch tabs. Global shortcuts
     // are off while a dialog is open, so B closes and L still opens a file.
     document.addEventListener('keydown', e => {

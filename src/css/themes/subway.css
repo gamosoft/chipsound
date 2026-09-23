@@ -207,12 +207,24 @@
 
 /* Sample list = next-train sidebar. */
 :root.theme-subway .sample-section { padding: 6px; }
-:root.theme-subway .sample-list {
+:root.theme-subway .sample-list,
+:root.theme-subway .playlist-rail {
     background: #0a0a0a;
     border: none;
     border-radius: 2px;
     padding: 6px;
     scrollbar-color: #663300 #0a0a0a;
+}
+:root.theme-subway .rail-tab {
+    padding: 0 0 6px;
+    margin-bottom: 4px;
+    border-bottom: 1px dashed rgba(255, 176, 0, 0.35);
+    color: #ffb000;
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-align: center;
 }
 :root.theme-subway .sample-item {
     color: #ffb000;

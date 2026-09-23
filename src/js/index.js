@@ -36,6 +36,7 @@ import { installDiagnostics } from './diagnostics.js';
 import { installMediaSession, setMediaSessionMetadata } from './media-session.js';
 import { initMixer, savedRenderConfig } from './mixer.js';
 import { initLibrary, modArchiveDownloadUrl, parseModArchiveIds } from './library.js';
+import { initSampleRail } from './sample-rail.js';
 
 let rafId = -1;
 // Worklet posts `end` every quantum once the cursor is past the song.
@@ -247,6 +248,7 @@ async function init() {
     });
     initMixer();
     initLibrary();
+    initSampleRail();
     installKeyboardShortcuts();
     installHelpEscape();
     installResizeHandler();

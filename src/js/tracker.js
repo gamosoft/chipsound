@@ -623,11 +623,11 @@ function computeContainerBottomChrome(main) {
 
 function syncSampleListHeight() {
     const main = getTrackerMain();
-    const sampleList = $('#sampleList');
-    if (!sampleList || !main) return;
+    const section = $('.sample-section');
+    if (!section || !main) return;
     const next = `${main.offsetHeight}px`;
-    if (sampleList.style.height !== next) {
-        sampleList.style.height = next;
+    if (section.style.height !== next) {
+        section.style.height = next;
     }
 }
 
