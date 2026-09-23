@@ -195,7 +195,7 @@ const localTab = {
         const base = prefs.libraryPath || './tracks/';
         const form = document.createElement('form');
         form.className = 'library-path';
-        form.innerHTML = `<label>Folder <input type="text" class="retro-select" name="path" spellcheck="false" autocomplete="off"></label>
+        form.innerHTML = `<label>Folder <input type="text" name="path" spellcheck="false" autocomplete="off"></label>
             <button type="submit" class="library-action library-action-icon" title="Open"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>`;
         const input = form.querySelector('input');
         input.value = base;
@@ -258,7 +258,7 @@ const urlTab = {
         const form = document.createElement('form');
         form.className = 'library-url';
         form.innerHTML = `<label>Module URL or Mod Archive id
-                <input type="text" class="retro-select" name="url" placeholder="https://… or 212083 or modarchive.org/…?query=212083" spellcheck="false" autocomplete="off"></label>
+                <input type="text" name="url" placeholder="https://… or 212083 or modarchive.org/…?query=212083" spellcheck="false" autocomplete="off"></label>
             <button type="submit" class="library-action">Load</button>
             <p class="library-blurb">Any http(s) URL the server allows cross-origin, a Mod Archive module id, or a Mod Archive page / download link.</p>`;
         form.addEventListener('submit', e => {

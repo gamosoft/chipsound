@@ -625,7 +625,19 @@ body.drag-over #dropZone { opacity: 1; }
     flex-direction: column;
     padding: 20px 24px;
     color: var(--popup-fg);
+    /* UI type, not the theme's body font — Impact/Bangers/Caveat stay on the player. */
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+}
+.modal-card input,
+.modal-card textarea,
+.modal-card button {
     font-family: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-transform: none;
 }
 .modal-title {
     margin: 0 0 12px;
@@ -1156,6 +1168,8 @@ kbd {
     gap: 8px;
     margin-bottom: 10px;
 }
+/* URL field sits on the left edge of overflow:hidden; a few px so the focus ring isn't clipped. */
+.library-url { padding-left: 4px; }
 .library-path label, .library-url label {
     flex: 1;
     display: flex;
@@ -1164,7 +1178,33 @@ kbd {
     min-width: 200px;
 }
 .library-url label { flex-direction: column; align-items: stretch; }
-.library-path input, .library-url input { flex: 1; width: 100%; box-sizing: border-box; padding: 6px 8px; }
+.library-path input, .library-url input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 6px 8px;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.3;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--popup-fg);
+    background: var(--popup-surface);
+    border: 1px solid var(--popup-border);
+    border-radius: 4px;
+}
+.library-path input::placeholder,
+.library-url input::placeholder {
+    color: var(--popup-muted);
+    opacity: 1;
+}
+.library-path input:focus-visible,
+.library-url input:focus-visible {
+    outline: 2px solid var(--popup-accent);
+    outline-offset: 1px;
+}
 .library-url .library-blurb { flex-basis: 100%; }
 
 @media (max-width: 640px) {
