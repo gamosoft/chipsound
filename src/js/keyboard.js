@@ -1,4 +1,7 @@
-// SHORTCUTS is the single source of truth — help overlay reads from it too.
+// SHORTCUTS is the help overlay and the global keydown table.
+// Entries with `run` are installed on document keydown. Empty `codes` are
+// help-only: contextual keys, or mouse + modifier. Clicks, playlist chrome,
+// and headset buttons are README — not this list.
 
 import { $, isTypingTarget } from './dom.js';
 import { cycleTheme } from './themes.js';
@@ -21,32 +24,25 @@ function isActivatableTarget(target) {
 export const SHORTCUTS = [
     { codes: ['Space', 'KeyP'], keys: ['Space', 'P'],    label: 'Play / Pause',            run: () => $('#play').click() },
     { codes: ['KeyS'],          keys: ['S'],             label: 'Stop',                    run: () => $('#stop').click() },
-    { codes: ['KeyL'],          keys: ['L'],             label: 'Open file… (several files start a new playlist)', run: () => pickLocalFile() },
-    { codes: ['KeyB'],          keys: ['B'],             label: 'Load (file, curated, local, URL)', run: () => toggleLibrary() },
+    { codes: ['KeyL'],          keys: ['L'],             label: 'Open file…',               run: () => pickLocalFile() },
+    { codes: ['KeyB'],          keys: ['B'],             label: 'Load',                     run: () => toggleLibrary() },
     { codes: ['ArrowLeft', 'ArrowRight'], keys: ['← / →'], label: 'Previous / next order', run: (e) => {
         const dir = e.code === 'ArrowLeft' ? -1 : +1;
         return e.shiftKey ? skipTrack(dir) : navigateOrder(dir);
     } },
     { codes: [],                keys: ['Shift', '← / →'], joiner: ' + ',                   label: 'Previous / next track in playlist' },
-    { codes: [],                keys: ['Previous / Next'],                                 label: 'Orders, or tracks when a playlist is playing' },
     { codes: ['KeyE'],          keys: ['E'],             label: 'Toggle effects (viz on/off)', run: () => $('#toggle-visualizations').click() },
     { codes: ['KeyV'],          keys: ['V'],             label: 'Cycle visualization (Shift: reverse)', run: (e) => cycleVisualization(e?.shiftKey) },
     { codes: ['KeyI'],          keys: ['I'],             label: 'Toggle samples / playlist pane', run: () => $('#toggle-samples').click() },
-    { codes: ['KeyM'],          keys: ['M'],             label: 'Toggle mixer (playback parameters)', run: () => toggleMixer() },
+    { codes: ['KeyM'],          keys: ['M'],             label: 'Toggle mixer',             run: () => toggleMixer() },
     { codes: ['KeyT'],          keys: ['T'],             label: 'Cycle theme (Shift: reverse)', run: (e) => cycleTheme(e?.shiftKey) },
     // Handle-focused — pane-resize.js owns these; listed here for the help overlay.
     { codes: [], keys: ['Handle', '← / →'], joiner: ' + ', label: 'Nudge samples pane (Shift: 40px)' },
     { codes: [], keys: ['Handle', 'Home'], joiner: ' + ',  label: 'Reset samples pane to automatic width' },
-    // Mouse-only — listed for docs, no key binding.
-    { codes: [], keys: ['Click header'],                           label: 'Toggle channel mute' },
-    { codes: [], keys: ['Ctrl', 'Click header'], joiner: ' + ',    label: 'Solo channel (mute others)' },
-    { codes: [], keys: ['Click <i class="fa-solid fa-grip-lines-vertical" aria-hidden="true"></i>'], label: 'Toggle ALL channels' },
-    { codes: [], keys: ['Drop files'],                           label: 'Play now, or add to playlist if already playing (Shift: replace)' },
-    { codes: [], keys: ['Click playlist row'],                   label: 'Jump to that track (samples pane Playlist tab)' },
-    { codes: [], keys: ['Playlist trash'],                       label: 'Remove that track (keeps playing if something is next; last one unloads)' },
-    { codes: [], keys: ['Headset next / prev'],                  label: 'Skip playlist tracks when a mix is playing' },
-    { codes: [], keys: ['?'],                                      label: 'Show this help' },
-    { codes: [], keys: ['Esc'],                                    label: 'Close this help' },
+    { codes: [], keys: ['Ctrl / ⌘', 'Click header'], joiner: ' + ', label: 'Solo channel (mute others)' },
+    { codes: [], keys: ['Shift', 'Drop'], joiner: ' + ',   label: 'Replace the playlist' },
+    { codes: [], keys: ['?'],                              label: 'Toggle keyboard shortcuts' },
+    { codes: [], keys: ['Esc'],                            label: 'Close dialog' },
 ];
 
 const codeHandlers = new Map();

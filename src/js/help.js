@@ -47,7 +47,7 @@ export function openHelp() { help.open(); }
 export function closeHelp() { help.close(); }
 export function toggleHelp() { help.toggle(); }
 
-// '?' (Shift+/) — not in the shortcut table; it's a derived shifted key.
+// '?' (Shift+/) is a derived shifted key, not a `codes` handler.
 // Esc is handled by the modal primitive.
 export function installHelpEscape() {
     document.addEventListener('keydown', e => {

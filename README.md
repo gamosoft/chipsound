@@ -70,12 +70,13 @@ Other things worth mentioning:
 - Plays anything libopenmpt can decode (MOD, S3M, XM, IT and their variants)
 - Drag a module onto the page and it auto-plays
 - Press `T` to cycle themes, `V` to cycle visualizations
-- Click a channel header to mute it; Ctrl-click to solo
+- Click a channel header to mute it; Ctrl-click (⌘-click) to solo; click the grip to mute or unmute all
 - Subsong picker for modules that ship multiple subsongs
 - The samples pane starts **automatic**: as wide as the longest sample name (floor 120px, cap 40% of the row). Drag the handle on its inner edge to set a width for this browser; double-click the handle (or Home with it focused) to go back to automatic. It is tabbed **SAMPLES** / **PLAYLIST** — click a playlist row to jump, hover a row for the trash can to remove it. Trash on the playing track continues with the next one; trash on the last track, or Clear playlist, unloads the player. `I` still hides the whole rail.
 - Press `M` for the mixer (stereo, tempo, pitch, gain and other live playback parameters). Settings are remembered in this browser
-- Press `B` (or the Load button) for the library: a file from this device, the chipsound.com sample tracks, your recent URLs, a browsable local folder (serve your modules as `./tracks/`), and a URL / Mod Archive id box. `L` still opens the file picker directly (several files start a new playlist).
-- `?` opens the full keyboard shortcut list
+- Press `B` (or the Load button) for the library: a file from this device, the chipsound.com sample tracks, your recent URLs, a browsable local folder (serve your modules as `./tracks/`), and a URL / Mod Archive id box. Local and Curated: click plays that one, hover `+` adds it to the playlist without closing, **Play all** starts the whole list as a mix. `L` still opens the file picker directly (several files start a new playlist).
+- Previous / Next skip orders, or tracks when a playlist is playing
+- `?` toggles the keyboard shortcut list
 
 ## Quick start
 
@@ -108,7 +109,7 @@ Then open <http://localhost:8765/>.
 
 ### Local `tracks` folder
 
-The Library (`B` → Local) lists modules from `./tracks/` next to the player. Put a `src/tracks/` folder of `.mod` / `.s3m` / `.xm` / `.it` files when you serve from `src/`. With Docker, mount your collection at runtime instead of copying it into the image:
+The Library (`B` → Local) lists modules from `./tracks/` next to the player. Click a row to play it, hover `+` to queue it, or **Play all** for the whole folder. Add your own `.mod` / `.s3m` / `.xm` / `.it` files to `src/tracks/` when you serve from `src/`. With Docker, mount your collection at runtime instead of copying it into the image:
 
 ```bash
 docker run --rm -p 8765:80 -v /path/to/modules:/usr/share/caddy/tracks chipsound
@@ -133,7 +134,7 @@ https://chipsound.com/player.html?modarchive=212083
 https://chipsound.com/player.html?modarchive=212083,212701,48357
 ```
 
-A comma-separated `?modarchive=` plays those modules in order. The Load → URL box accepts the same list (`212083,212701`). Mixer **Loop** is still per-module (Play once, then the playlist advances; Forever never yields). Drop several files or a folder to build a playlist; drop while playing (or onto an existing mix) appends, `Shift+drop` replaces. `L` with several files starts a new mix. The samples pane **PLAYLIST** tab is the mix — it is the loaded set (click a row to jump; trash removes one track and keeps playing if something is next; Clear playlist or removing the last track unloads the player). Headset next/prev skip tracks while a mix is playing.
+A comma-separated `?modarchive=` plays those modules in order. The Load → URL box accepts the same list (`212083,212701`). Mixer **Loop** is still per-module (Play once, then the playlist advances; Forever never yields). Drop several files or a folder to build a playlist; drop while playing (or onto an existing mix) appends, `Shift+drop` replaces. `L` with several files starts a new mix. Load → Local / Curated: **Play all** is the same idea for that list; hover `+` appends one track and leaves the dialog open. The samples pane **PLAYLIST** tab is the mix — it is the loaded set (click a row to jump; trash removes one track and keeps playing if something is next; Clear playlist or removing the last track unloads the player). Previous / Next and headset next/prev skip tracks while a mix is playing; otherwise they skip orders.
 
 > **Loading from The Mod Archive.** Modarchive's `downloads.php` endpoint sends the right CORS headers and works directly, but the `?` inside the inner URL must be percent-encoded (`%3F`), otherwise the outer query parser splits the URL in two:
 
@@ -144,27 +145,21 @@ A comma-separated `?modarchive=` plays those modules in order. The Load → URL 
 |---|---|
 | `Space` / `P` | Play / Pause |
 | `S` | Stop |
-| `L` | Open file… (several files start a new playlist) |
-| `B` | Load (file, curated, local, URL) |
+| `L` | Open file… |
+| `B` | Load |
 | `←` / `→` | Previous / next order |
 | `Shift` + `←` / `→` | Previous / next track in playlist |
-| Previous / Next | Orders, or tracks when a playlist is playing |
-| Handle + `←` / `→` | Nudge samples pane width (Shift: 40px) |
-| Handle + `Home` | Reset samples pane to automatic |
 | `E` | Toggle effects (visualizations on/off) |
 | `V` / `Shift` + `V` | Cycle visualization forward / backward |
 | `I` | Toggle samples / playlist pane |
-| `M` | Toggle mixer (playback parameters) |
+| `M` | Toggle mixer |
 | `T` / `Shift` + `T` | Cycle theme forward / backward |
-| `?` | Show this help |
-| `Esc` | Close this help |
-| Click header | Toggle channel mute |
-| Ctrl + Click header | Solo channel (mute others) |
-| Click grip icon in header | Toggle ALL channels |
-| Drop files | Play now, or add to playlist if already playing (`Shift`: replace) |
-| Click playlist row | Jump to that track (samples pane Playlist tab) |
-| Playlist trash | Remove that track (keeps playing if something is next; last one unloads) |
-| Headset next / prev | Skip playlist tracks when a mix is playing |
+| Handle + `←` / `→` | Nudge samples pane width (Shift: 40px) |
+| Handle + `Home` | Reset samples pane to automatic |
+| `Ctrl` / `⌘` + Click header | Solo channel (mute others) |
+| `Shift` + Drop | Replace the playlist |
+| `?` | Toggle keyboard shortcuts |
+| `Esc` | Close dialog |
 
 ## Privacy & telemetry
 

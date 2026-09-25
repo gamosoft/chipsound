@@ -5,14 +5,15 @@
 //
 //   { id, label, icon, render(body, api) }   registerLibraryTab(tab, { before: 'url' })
 //   api.load(url, { name })  fetch + play a module and close the modal
-//   api.list(items)          helper: render [{ title, subtitle, url, meta }]
+//   api.list(items, { queue })  helper: render [{ title, subtitle, url, meta }]
+//                          queue: hover + appends without closing (not dirs)
 //
 // Built-in tabs: Recent, Local, URL, and Curated.
 
 import { $, isTypingTarget } from './dom.js';
 import { prefs } from './prefs.js';
 import { playerState } from './state.js';
-import { playNow, playList } from './playlist.js';
+import { playNow, playList, addToPlaylist, playlistLength } from './playlist.js';
 import { toast } from './toast.js';
 import { createModal } from './modal.js';
 
@@ -40,6 +41,8 @@ export const CURATED = [
 // Everything libopenmpt is likely to open; used to filter directory listings.
 const MODULE_EXT = /\.(mod|s3m|xm|it|mptm|669|amf|ams|dbm|digi|dmf|dsm|far|gdm|imf|j2b|mdl|med|mo3|mt2|mtm|okt|plm|psm|ptm|sfx|stm|ult|umx|wow|mdz|s3z|xmz|itz)$/i;
 const RECENT_MAX = 25;
+// Same ceiling as drop / L in controls.js — keep in sync.
+const PLAYLIST_CAP = 100;
 
 let bodyEl = null;
 let tabBarEl = null;
@@ -120,12 +123,62 @@ function playRecent(r) {
 
 // ---------- helpers for tabs ----------
 
+function playlistItemFrom(it) {
+    if (!it || it.kind === 'dir') return null;
+    if (it.file) return { file: it.file, name: it.name || it.file.name };
+    if (it.url) return { url: it.url, name: it.name };
+    return null;
+}
+
+function queueable(items) {
+    const out = [];
+    for (const it of items) {
+        const item = playlistItemFrom(it);
+        if (item) out.push(item);
+    }
+    return out;
+}
+
+function addOneToPlaylist(it) {
+    const item = playlistItemFrom(it);
+    if (!item) return;
+    if (playlistLength() >= PLAYLIST_CAP) {
+        toast(`Playlist is full (${PLAYLIST_CAP})`, { variant: 'warn' });
+        return;
+    }
+    addToPlaylist([item]);
+    const n = playlistLength();
+    toast(`Added to playlist: ${item.name || it.title || 'Module'} · ${n} total`, { variant: 'info' });
+}
+
+function playAll(items) {
+    const all = queueable(items);
+    if (!all.length) return;
+    const capped = all.length > PLAYLIST_CAP;
+    const next = capped ? all.slice(0, PLAYLIST_CAP) : all;
+    closeLibrary();
+    void playList(next, { autoPlay: true });
+    if (capped) toast(`Playing ${next.length}, capped at ${PLAYLIST_CAP}`, { variant: 'warn' });
+}
+
+function playAllButton(items) {
+    const n = queueable(items).length;
+    if (n < 2) return null;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'library-action library-clear';
+    b.title = `Play ${n} modules as a playlist`;
+    b.innerHTML = '<span class="btn-label">Play all</span>';
+    b.addEventListener('click', () => playAll(items));
+    return b;
+}
+
 const api = {
     load(url, { name } = {}) {
         closeLibrary();
         playNow({ url, name }, { autoPlay: true });
     },
-    list(items, { empty = 'Nothing here yet.' } = {}) {
+    list(items, { empty = 'Nothing here yet.', queue = false } = {}) {
         const ul = document.createElement('ul');
         ul.className = 'library-list';
         if (!items.length) {
@@ -137,6 +190,8 @@ const api = {
         }
         for (const it of items) {
             const li = document.createElement('li');
+            const canQueue = queue && !!playlistItemFrom(it);
+            if (canQueue) li.className = 'library-row';
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'library-item' + (it.kind === 'dir' ? ' library-dir' : '');
@@ -150,6 +205,20 @@ const api = {
             btn.querySelector('.library-item-meta').textContent = it.meta || '';
             btn.addEventListener('click', () => it.onClick ? it.onClick() : api.load(it.url, { name: it.name }));
             li.appendChild(btn);
+            if (canQueue) {
+                const add = document.createElement('button');
+                add.type = 'button';
+                add.className = 'library-add';
+                add.title = 'Add to playlist';
+                add.setAttribute('aria-label', `Add ${it.title} to playlist`);
+                add.innerHTML = '<i class="fa-solid fa-plus" aria-hidden="true"></i>';
+                add.addEventListener('click', e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addOneToPlaylist(it);
+                });
+                li.appendChild(add);
+            }
             ul.appendChild(li);
         }
         return ul;
@@ -165,10 +234,13 @@ const curatedTab = {
         p.className = 'library-blurb';
         p.innerHTML = 'Sample tracks picked for <a href="https://chipsound.com" target="_blank" rel="noopener">chipsound.com</a>, streamed from <a href="https://modarchive.org" target="_blank" rel="noopener">The Mod Archive</a>.';
         body.appendChild(p);
-        body.appendChild(api.list(CURATED.map(c => ({
+        const items = CURATED.map(c => ({
             title: c.title, subtitle: c.artist, meta: c.file.split('.').pop().toUpperCase(),
             url: modArchiveDownloadUrl(c.modarchive), name: c.file,
-        }))));
+        }));
+        body.appendChild(api.list(items, { queue: true }));
+        const all = playAllButton(items);
+        if (all) body.appendChild(all);
     },
 };
 
@@ -253,7 +325,9 @@ const localTab = {
             items.push({ title: f, meta: f.split('.').pop().toUpperCase(), url: base + encodeURIComponent(f), name: f });
         }
         holder.innerHTML = '';
-        holder.appendChild(api.list(items, { empty: 'No modules in this folder.' }));
+        holder.appendChild(api.list(items, { empty: 'No modules in this folder.', queue: true }));
+        const all = playAllButton(items);
+        if (all) body.appendChild(all);
         if (!entries.files.length) { const r = resetLink(); if (r) holder.appendChild(r); }
     },
 };

@@ -1291,6 +1291,15 @@ kbd {
     overscroll-behavior: contain;
 }
 
+/* Local wraps the ul in .library-listing. Two overflow:auto boxes stacked
+   means the inner one (height = content, so it never scrolls) eats the
+   wheel via overscroll-behavior:contain. Listing is the scroller. */
+.library-listing .library-list {
+    flex: none;
+    overflow: visible;
+    overscroll-behavior: auto;
+}
+
 /* Popup scrollbars (help body, library lists). Tokens follow the theme. */
 .modal-body,
 .library-list,
@@ -1354,6 +1363,60 @@ kbd {
 .library-item-sub { color: var(--popup-muted); font-size: 11px; }
 .library-item-meta { color: var(--popup-faint); font-size: 10px; min-width: 3em; text-align: right; }
 .library-item.now-playing .library-item-title { color: var(--popup-accent); }
+
+.library-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1.6em;
+    align-items: stretch;
+    gap: 0;
+}
+.library-row .library-item { width: auto; min-width: 0; }
+.library-row:hover .library-item {
+    background: var(--popup-surface);
+    border-color: var(--popup-border);
+}
+.library-add {
+    appearance: none;
+    -webkit-appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6em;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--popup-fg);
+    opacity: 0;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    box-sizing: border-box;
+}
+.library-row:hover .library-add,
+.library-row:has(:focus-visible) .library-add,
+.library-add:focus-visible {
+    opacity: 0.7;
+}
+.library-add:hover, .library-add:focus-visible {
+    opacity: 1;
+    color: var(--popup-accent);
+    outline: none;
+}
+.library-add:focus-visible { outline: 2px solid var(--popup-accent); outline-offset: -2px; }
+.library-add i { color: inherit; font-size: 11px; }
+body.drag-over .library-add {
+    opacity: 0 !important;
+    pointer-events: none;
+}
+@media (hover: none) {
+    .library-add { opacity: 0.55; }
+}
+
 .library-empty { color: var(--popup-muted); padding: 16px 8px; }
 .library-list:has(.library-empty),
 .library-listing:has(.library-empty) {
