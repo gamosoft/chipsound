@@ -40,7 +40,6 @@ jobs:
           cp src/favicon.ico _site/favicon.ico
           cp -a src/css _site/
           cp -a src/js  _site/
-          cp -a src/tracks _site/tracks
 
           # Inject GA4 into the public landing + player pages at deploy time.
           # Both repo sources stay GA-free so self-hosted (Docker / clone)
@@ -97,7 +96,7 @@ jobs:
           # Synthesize Caddy-shape autoindex listings so the runtime discovery in
           # js/themes.js and js/viz-engine.js sees every drop-in file. GitHub Pages
           # does not emit directory indexes; this is the bridge.
-          for dir in _site/css/themes _site/js/visualizations _site/tracks; do
+          for dir in _site/css/themes _site/js/visualizations; do
             {
               echo '<!doctype html><html><body><ul>'
               for f in "$dir"/*; do
