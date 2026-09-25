@@ -130,9 +130,13 @@ body { overflow: hidden; }
 
 /* Long filename / title wrap inside the chip; don't grow the chip itself
    (flex-grow/basis is the main axis, so it blows width in a row and height
-   in a stacked theme). Hover shows the full string (title attr on write). */
+   in a stacked theme). Hover shows the full string (title attr on write).
+   min-height keeps an empty value (boot / unload) from collapsing the chip
+   so a load doesn't shove the tracker down. */
 .mod-info-box > div {
     min-width: 0;
+    min-height: 1.2em;
+    line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

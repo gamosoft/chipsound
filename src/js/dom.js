@@ -31,7 +31,7 @@ export function setText(selectorOrNode, text) {
     if (!node) return;
     node.textContent = text;
     if (node.id === 'fileName' || node.id === 'songName') {
-        node.title = text || '';
+        node.title = text && text !== '\u00a0' ? text : '';
     }
 }
 

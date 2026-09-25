@@ -77,6 +77,7 @@ export function renderTracker(meta) {
 }
 
 const MIN_CHANNEL_WIDTH = 70;
+const CHIP_BLANK = '\u00a0';
 
 function gridTemplate(channels) {
     return `var(--row-label-col, 20px) repeat(${channels}, minmax(${MIN_CHANNEL_WIDTH}px, 1fr))`;
@@ -92,15 +93,15 @@ export function resetTracker(meta) {
     invalidateStatusCache();
 
     if (placeholder) {
-        writeIfChanged('#songName', '');
-        writeIfChanged('#channels', '');
-        writeIfChanged('#samples', '');
-        writeIfChanged('#order', '');
-        writeIfChanged('#pattern', '');
-        writeIfChanged('#row', '');
-        writeIfChanged('#bpm', '');
+        writeIfChanged('#songName', CHIP_BLANK);
+        writeIfChanged('#channels', CHIP_BLANK);
+        writeIfChanged('#samples', CHIP_BLANK);
+        writeIfChanged('#order', CHIP_BLANK);
+        writeIfChanged('#pattern', CHIP_BLANK);
+        writeIfChanged('#row', CHIP_BLANK);
+        writeIfChanged('#bpm', CHIP_BLANK);
     } else {
-        writeIfChanged('#songName', meta.title || '-');
+        writeIfChanged('#songName', meta.title || CHIP_BLANK);
         writeIfChanged('#channels', String(song.channels));
         writeIfChanged('#samples', String(song.samples.length));
 
@@ -213,7 +214,9 @@ function writeIfChanged(selector, text) {
     if (slot.lastText === text) return;
     slot.lastText = text;
     slot.node.textContent = text;
-    if (slot.node.id === 'songName') slot.node.title = text && text !== '-' ? text : '';
+    if (slot.node.id === 'songName') {
+        slot.node.title = text && text !== CHIP_BLANK ? text : '';
+    }
 }
 
 function invalidateStatusCache() {

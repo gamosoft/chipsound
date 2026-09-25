@@ -167,7 +167,7 @@ export function unloadLiveModule() {
     autoPlayOnNextLoad = false;
     playerState.player?.stop();
     playerState.fileName = '';
-    setText('#fileName', '');
+    setText('#fileName', '\u00a0');
     playerState.meta = placeholderMeta();
     playerState.modpos = {};
     playerState.pendingJumpOrder = null;
